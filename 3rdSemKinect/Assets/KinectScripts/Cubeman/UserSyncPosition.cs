@@ -88,9 +88,15 @@ public class UserSyncPosition : NetworkBehaviour
         Vector3 posPointMan = manager.GetUserPosition(playerID);
         posPointMan.z = !MirroredMovement ? -posPointMan.z : posPointMan.z;
         posPointMan.x *= 1;
-        Quaternion direction = Quaternion.AngleAxis(offsetCalculator.rotationalOffset.y, Vector3.up);
-        transform.position = (direction*posPointMan) != Vector3.zero ? (direction*posPointMan) : posPointMan;
-        transform.position = posPointMan;
+        if (Offset)
+        {
+            Quaternion direction = Quaternion.AngleAxis(offsetCalculator.rotationalOffset.y, Vector3.up);
+            transform.position = (direction*posPointMan) != Vector3.zero ? (direction*posPointMan) : posPointMan;
+        }
+        else
+        {
+            transform.position = posPointMan;
+        }
         RotateWithUser();
     }
 

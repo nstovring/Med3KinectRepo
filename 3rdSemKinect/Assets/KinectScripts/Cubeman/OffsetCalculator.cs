@@ -2,6 +2,7 @@
 using System.Collections;
 using UnityEngine.Networking;
 using System;
+using System.Xml.Serialization;
 
 public class OffsetCalculator : NetworkBehaviour {
 
@@ -20,12 +21,6 @@ public class OffsetCalculator : NetworkBehaviour {
 	    offsetCalculator = this;
 	}
 
-
-	// Update is called once per frame
-    [Server]
-	void Update () {
-       
-	}
 
     public void CalculateOffset()
     {
@@ -46,9 +41,14 @@ public class OffsetCalculator : NetworkBehaviour {
     public Vector3 GetRotationOffset()
     {
         return new Vector3(
-          Vector3.Angle(players[0].transform.right, players[1].transform.right),
           Vector3.Angle(players[0].transform.up, players[1].transform.up),
-          Vector3.Angle(players[0].transform.forward, players[1].transform.forward));
+          Vector3.Angle(players[0].transform.forward, players[1].transform.forward),
+          Vector3.Angle(players[0].transform.right, players[1].transform.right));
+    }
+
+    public void ApplyOffset()
+    {
+        players[1].transform.GetComponent<UserSyncPosition>().Offset = true;
     }
 
 
