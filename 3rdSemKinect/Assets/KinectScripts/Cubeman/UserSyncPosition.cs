@@ -129,7 +129,15 @@ public class UserSyncPosition : NetworkBehaviour
 
                 Quaternion rotationShoulders = Quaternion.FromToRotation(Vector3.right, dirLeftRight);
 
-                myTransform.rotation = rotationShoulders;
+                /*if (rotationalOffset)
+                {
+                    rotationShoulders.y -= offsetCalculator.rotationalOffset.y;
+                    myTransform.rotation = rotationShoulders;
+                }
+                else*/
+                {
+                    myTransform.rotation = rotationShoulders;
+                }
             }
         }
     }

@@ -21,7 +21,6 @@ public class OffsetCalculator : NetworkBehaviour {
 	    offsetCalculator = this;
 	}
 
-
     public void CalculateOffset()
     {
         players = GameObject.FindGameObjectsWithTag("Player");
@@ -48,11 +47,15 @@ public class OffsetCalculator : NetworkBehaviour {
 
     public void ApplyPositionalOffset()
     {
+        players = GameObject.FindGameObjectsWithTag("Player");
+        positionalOffset = GetPositionOffset();
         players[1].transform.GetComponent<UserSyncPosition>().positionalOffset = true;
     }
 
     public void ApplyRotationalOffset()
     {
+        players = GameObject.FindGameObjectsWithTag("Player");
+        rotationalOffset = GetRotationOffset();
         players[1].transform.GetComponent<UserSyncPosition>().rotationalOffset = true;
     }
 
