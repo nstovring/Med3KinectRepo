@@ -97,10 +97,9 @@ public class KinectManager : MonoBehaviour
 
 	// GUI Text to show gesture debug message.
 	public GUIText GesturesDebugText;
-	
 
 	// Bool to keep track of whether Kinect has been initialized
-	private bool KinectInitialized = false; 
+	public bool KinectInitialized = false; 
 	
 	// Bools to keep track of who is currently calibrated.
 	private bool Player1Calibrated = false;
@@ -146,7 +145,7 @@ public class KinectManager : MonoBehaviour
 	private byte[] usersColorMap;
 	
 	// Skeleton related structures
-	private KinectWrapper.NuiSkeletonFrame skeletonFrame;
+	public KinectWrapper.NuiSkeletonFrame skeletonFrame;
 	private KinectWrapper.NuiTransformSmoothParameters smoothParameters;
 	private int player1Index, player2Index;
 	
@@ -173,7 +172,7 @@ public class KinectManager : MonoBehaviour
 	// List of Gesture Listeners. They must implement KinectGestures.GestureListenerInterface
 	public List<KinectGestures.GestureListenerInterface> gestureListeners;
 	
-	private Matrix4x4 kinectToWorld, flipMatrix;
+	public Matrix4x4 kinectToWorld, flipMatrix;
 	private static KinectManager instance;
 	
     // Timer for controlling Filter Lerp blends.

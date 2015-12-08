@@ -92,20 +92,24 @@ public class UserSyncPosition : NetworkBehaviour
         posPointMan.z = !MirroredMovement ? -posPointMan.z : posPointMan.z;
         posPointMan.x *= 1;
 
-        if (positionalOffset)
-        {
-            posPointMan += offsetCalculator.positionalOffset;
-        }
-
         if (rotationalOffset)
         {
             Quaternion direction = Quaternion.AngleAxis(offsetCalculator.rotationalOffset.y, Vector3.up);
-            transform.position = (direction*posPointMan) != Vector3.zero ? (direction*posPointMan) : posPointMan;
+            posPointMan = (direction * posPointMan) != Vector3.zero ? (direction * posPointMan) : posPointMan;
+            transform.position = posPointMan;
+        }
+
+        if (positionalOffset)
+        {
+            posPointMan += offsetCalculator.positionalOffset;
+            transform.position = posPointMan;
         }
         else
         {
             transform.position = posPointMan;
         }
+
+
     }
 
     [Client]
@@ -129,12 +133,12 @@ public class UserSyncPosition : NetworkBehaviour
 
                 Quaternion rotationShoulders = Quaternion.FromToRotation(Vector3.right, dirLeftRight);
 
-                /*if (rotationalOffset)
+                if (rotationalOffset)
                 {
-                    rotationShoulders.y -= offsetCalculator.rotationalOffset.y;
+                    rotationShoulders.eulerAngles -= new Vector3(0,offsetCalculator.rotationalOffset.y,0);
                     myTransform.rotation = rotationShoulders;
                 }
-                else*/
+                else
                 {
                     myTransform.rotation = rotationShoulders;
                 }

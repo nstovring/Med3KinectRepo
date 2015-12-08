@@ -76,8 +76,6 @@
     <Compile Include="Assets\KinectScripts\AvatarController.cs" />
     <Compile Include="Assets\KinectScripts\AvatarControllerClassic.cs" />
     <Compile Include="Assets\KinectScripts\Cubeman\CubemanController.cs" />
-    <Compile Include="Assets\KinectScripts\Cubeman\OffsetCalculator.cs" />
-    <Compile Include="Assets\KinectScripts\Cubeman\UserSyncPosition.cs" />
     <Compile Include="Assets\KinectScripts\Filters\BoneOrientationsConstraint.cs" />
     <Compile Include="Assets\KinectScripts\Filters\BoneOrientationsFilter.cs" />
     <Compile Include="Assets\KinectScripts\Filters\ClippedLegsFilter.cs" />
@@ -95,7 +93,11 @@
     <Compile Include="Assets\KinectScripts\Samples\MouseControl.cs" />
     <Compile Include="Assets\KinectScripts\Samples\SetSceneAvatars.cs" />
     <Compile Include="Assets\KinectScripts\Samples\SimpleGestureListener.cs" />
+    <Compile Include="Assets\Logger.cs" />
+    <Compile Include="Assets\OffsetCalculator.cs" />
     <Compile Include="Assets\OverlayDemo\Scripts\KinectOverlayer.cs" />
+    <Compile Include="Assets\UserController.cs" />
+    <Compile Include="Assets\UserSyncPosition.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath)\SyntaxTree\UnityVS\2015\UnityVS.CSharp.targets" />
 </Project>
