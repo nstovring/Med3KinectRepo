@@ -24,50 +24,31 @@ public class OffsetCalculator : NetworkBehaviour {
 	// Update is called once per frame
     [Server]
 	void Update () {
-        /*players = GameObject.FindGameObjectsWithTag("Player");
-
-        if (this.players.Length >= 2) {
-            player2Offset = players[0].transform.position - players[1].transform.position;
-            player1AngleFromKinect = Mathf.Abs(players[0].transform.GetComponent<CubeController>().angleFromKinect);
-
-            CubeController player2Controller = players[1].transform.GetComponent<CubeController>();
-
-            player2angleOffset = player1AngleFromKinect + Mathf.Abs(player2Controller.angleFromKinect) + Mathf.Abs(player2Controller.angleBetweenKinects);
-            SetPositionOffset();
-            SetRotationOffset();
-        }*/
+       
 	}
 
     public void CalculateOffset()
     {
         players = GameObject.FindGameObjectsWithTag("Player");
 
-        /*if (this.players.Length >= 2)
-        {
-            player2Offset = GetPositionOffset();
-            player1AngleFromKinect = Mathf.Abs(players[0].transform.GetComponent<CubeController>().angleFromKinect);
-
-            CubeController player2Controller = players[1].transform.GetComponent<CubeController>();
-
-            player2angleOffset = player1AngleFromKinect + Mathf.Abs(player2Controller.angleFromKinect) + Mathf.Abs(player2Controller.angleBetweenKinects);
-        }*/
+       if (players.Length >= 2)
+       {
+           positionalOffset = GetPositionOffset();
+           rotationalOffset = GetRotationOffset();
+       }
     }
 
     public Vector3 GetPositionOffset()
     {
-        players = GameObject.FindGameObjectsWithTag("Player");
-        positionalOffset = (players[0].transform.position - players[1].transform.position);
-        return positionalOffset;
+        return (players[0].transform.position - players[1].transform.position);
     }
 
     public Vector3 GetRotationOffset()
     {
-        players = GameObject.FindGameObjectsWithTag("Player");
-        rotationalOffset = new Vector3(
+        return new Vector3(
           Vector3.Angle(players[0].transform.right, players[1].transform.right),
           Vector3.Angle(players[0].transform.up, players[1].transform.up),
           Vector3.Angle(players[0].transform.forward, players[1].transform.forward));
-        return rotationalOffset;
     }
 
 
