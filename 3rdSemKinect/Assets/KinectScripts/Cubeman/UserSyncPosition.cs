@@ -8,7 +8,9 @@ public class UserSyncPosition : NetworkBehaviour
     [SyncVar] private Vector3 syncPos;
     [SyncVar] private Vector3 syncRot;
 
-    [SyncVar] public bool Offset;
+    [SyncVar] public bool positionalOffset;
+    [SyncVar] public bool rotationalOffset;
+
     [SyncVar] private Color userColor;
     [SyncVar] private string objectName;
 
@@ -65,6 +67,7 @@ public class UserSyncPosition : NetworkBehaviour
             else
             {
                 MoveWithUser();
+                RotateWithUser();
                 CmdProvidePositionToServer(myTransform.position, myTransform.rotation.eulerAngles);
             }
         }
@@ -88,7 +91,13 @@ public class UserSyncPosition : NetworkBehaviour
         Vector3 posPointMan = manager.GetUserPosition(playerID);
         posPointMan.z = !MirroredMovement ? -posPointMan.z : posPointMan.z;
         posPointMan.x *= 1;
-        if (Offset)
+
+        if (positionalOffset)
+        {
+            posPointMan += offsetCalculator.positionalOffset;
+        }
+
+        if (rotationalOffset)
         {
             Quaternion direction = Quaternion.AngleAxis(offsetCalculator.rotationalOffset.y, Vector3.up);
             transform.position = (direction*posPointMan) != Vector3.zero ? (direction*posPointMan) : posPointMan;
@@ -97,7 +106,6 @@ public class UserSyncPosition : NetworkBehaviour
         {
             transform.position = posPointMan;
         }
-        RotateWithUser();
     }
 
     [Client]

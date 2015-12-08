@@ -46,26 +46,14 @@ public class OffsetCalculator : NetworkBehaviour {
           Vector3.Angle(players[0].transform.right, players[1].transform.right));
     }
 
-    public void ApplyOffset()
+    public void ApplyPositionalOffset()
     {
-        players[1].transform.GetComponent<UserSyncPosition>().Offset = true;
+        players[1].transform.GetComponent<UserSyncPosition>().positionalOffset = true;
     }
 
-
-    [Server]
-    private void SetRotationOffset()
+    public void ApplyRotationalOffset()
     {
-        //Debug.Log(players[0].transform.forward  +" & "+ players[1].transform.forward);
-        //Debug.Log(Vector3.Angle(players[0].transform.forward, players[1].transform.forward));
-
-       // players[1].GetComponent<CubeController>().tempRotation = Vector3.Angle(players[0].transform.forward,
-          //players[1].transform.forward);
-    }
-    [Server]
-    private void SetPositionOffset()
-    {
-       // players[1].GetComponent<CubeController>().positionOffset = this.player2Offset;
-       // players[1].GetComponent<CubeController>().otherAngleFromKinect = this.player1AngleFromKinect;
+        players[1].transform.GetComponent<UserSyncPosition>().rotationalOffset = true;
     }
 
 }
