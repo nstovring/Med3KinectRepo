@@ -25,15 +25,20 @@ public class UserController : NetworkBehaviour {
     {
         base.OnStartClient();
         //int = 0;
+        
+        allUsers = new List<uint>();
+    }
+    [Command]
+    void Cmd_SpawnObjects()
+    {
         for (int i = 0; i < users.Length; i++)
         {
             users[i] = Instantiate(prefab, initialPosVector3, Quaternion.identity) as GameObject;
             NetworkServer.Spawn(users[i]);
             UserSyncPosition userSyncPosition = users[i].transform.GetComponent<UserSyncPosition>();
             userSyncPosition.isCalibrationUser = false;
-            userSyncPosition.Initialize(" " + (GetComponent<NetworkIdentity>().netId.Value-1) +" " + i, RandomColor());
+            userSyncPosition.Initialize(" " + (GetComponent<NetworkIdentity>().netId.Value - 1) + " " + i, RandomColor());
         }
-        allUsers = new List<uint>();
     }
 
     Color RandomColor()
@@ -45,8 +50,15 @@ public class UserController : NetworkBehaviour {
     public bool Logging;
 
     // Update is called once per frame
+    [Client]
     void Update ()
     {
+        if (Input.anyKeyDown)
+        {
+            Cmd_SpawnObjects();
+        }
+
+        manager = KinectManager.Instance;
         if (Logging)
         {
             timePassed += Time.deltaTime;
@@ -56,6 +68,10 @@ public class UserController : NetworkBehaviour {
             skeletonFrame = manager.skeletonFrame;
             for (int i = 0; i < skeletonFrame.SkeletonData.Length; i++)
             {
+                if (users[i] == null)
+                {
+                    return;
+                }
                 KinectWrapper.NuiSkeletonData skeletonData = skeletonFrame.SkeletonData[i];
                 UserSyncPosition userSyncPosition = users[i].GetComponent<UserSyncPosition>();
                 Vector3 skeletonPos = manager.kinectToWorld.MultiplyPoint3x4(skeletonData.Position);
@@ -74,7 +90,7 @@ public class UserController : NetworkBehaviour {
                         allUsers.Add(userId);
                     }
                     userSyncPosition.MoveWithUser(skeletonPos);
-                    userSyncPosition.CmdProvidePositionToServer(skeletonPos, Vector3.zero);
+                    //userSyncPosition.CmdProvidePositionToServer(skeletonPos, Vector3.zero);
                 }
                 else
                 {
@@ -87,7 +103,6 @@ public class UserController : NetworkBehaviour {
                         allUsers.Remove(userId);
                     }
                     userSyncPosition.MoveWithUser(initialPosVector3);
-                    userSyncPosition.CmdProvidePositionToServer(initialPosVector3, Vector3.zero);
                 }
             }
         }
