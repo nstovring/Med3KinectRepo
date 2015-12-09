@@ -31,27 +31,27 @@ public class UserController : NetworkBehaviour {
     [Command]
     void Cmd_SpawnObjects()
     {
-        /*for (int i = 0; i < users.Length; i++)
-        {
-            users[i] = Instantiate(prefab, initialPosVector3, Quaternion.identity) as GameObject;
-            NetworkServer.Spawn(users[i]);
-            UserSyncPosition userSyncPosition = users[i].transform.GetComponent<UserSyncPosition>();
-            userSyncPosition.isCalibrationUser = false;
-            userSyncPosition.Initialize(" " + (GetComponent<NetworkIdentity>().netId.Value - 1), RandomColor());
-        }*/
-        Rpc_SpawnObjects();
-    }
-
-    [ClientRpc]
-    void Rpc_SpawnObjects()
-    {
         for (int i = 0; i < users.Length; i++)
         {
             users[i] = Instantiate(prefab, initialPosVector3, Quaternion.identity) as GameObject;
             NetworkServer.Spawn(users[i]);
             UserSyncPosition userSyncPosition = users[i].transform.GetComponent<UserSyncPosition>();
             userSyncPosition.isCalibrationUser = false;
-            userSyncPosition.Initialize(" " + (GetComponent<NetworkIdentity>().netId.Value - 1) + " " + i, RandomColor());
+            userSyncPosition.Initialize(" " + (GetComponent<NetworkIdentity>().netId.Value - 1), RandomColor());
+            users[i].transform.tag = "SubUser" + (GetComponent<NetworkIdentity>().netId.Value - 1);
+        }
+        Rpc_SpawnObjects();
+    }
+
+    [ClientRpc]
+    void Rpc_SpawnObjects()
+    {
+        if (isLocalPlayer)
+        {
+            for (int i = 0; i < users.Length; i++)
+            {
+                users[i] = GameObject.FindGameObjectWithTag("SubUser"+ (GetComponent<NetworkIdentity>().netId.Value - 1));
+            }
         }
     }
 
