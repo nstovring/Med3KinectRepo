@@ -21,15 +21,27 @@ public class OffsetCalculator : NetworkBehaviour {
 	    offsetCalculator = this;
 	}
 
+    public void GetPositionalValuesFromPlayerPrefs()
+    {
+        Vector3 offsetPosVector3 = new Vector3(PlayerPrefs.GetFloat("PositionalOffsetX"), PlayerPrefs.GetFloat("PositionalOffsetY"), PlayerPrefs.GetFloat("PositionalOffsetZ"));
+        Vector3 offsetRotVector3 = new Vector3(PlayerPrefs.GetFloat("RotationalOffsetX"), PlayerPrefs.GetFloat("RotationalOffsetY"), PlayerPrefs.GetFloat("RotationalOffsetZ"));
+
+        rotationalOffset = offsetRotVector3;
+        positionalOffset = offsetPosVector3;
+    }
+
     public void CalculateOffset()
     {
         players = GameObject.FindGameObjectsWithTag("Player");
 
-       if (players.Length >= 2)
+        if (players.Length >= 2)
        {
-           positionalOffset = GetPositionOffset();
-           rotationalOffset = GetRotationOffset();
-           players[1].transform.GetComponent<UserSyncPosition>().Offset = true;
+            positionalOffset = GetPositionOffset();
+            rotationalOffset = GetRotationOffset();
+            PlayerPrefs.SetFloat("PositionalOffsetX", (positionalOffset.x));
+            PlayerPrefs.SetFloat("PositionalOffsetY", (positionalOffset.y));
+            PlayerPrefs.SetFloat("PositionalOffsetZ", (positionalOffset.z));
+            players[1].transform.GetComponent<UserSyncPosition>().Offset = true;
         }
     }
 
@@ -50,6 +62,9 @@ public class OffsetCalculator : NetworkBehaviour {
     {
         players = GameObject.FindGameObjectsWithTag("Player");
         positionalOffset = GetPositionOffset();
+        PlayerPrefs.SetFloat("PositionalOffsetX", (positionalOffset.x));
+        PlayerPrefs.SetFloat("PositionalOffsetY", (positionalOffset.y));
+        PlayerPrefs.SetFloat("PositionalOffsetZ", (positionalOffset.z));
         players[1].transform.GetComponent<UserSyncPosition>().positionalOffset = true;
     }
 
@@ -57,6 +72,9 @@ public class OffsetCalculator : NetworkBehaviour {
     {
         players = GameObject.FindGameObjectsWithTag("Player");
         rotationalOffset = GetRotationOffset();
+        PlayerPrefs.SetFloat("RotationalOffsetX", (rotationalOffset.x));
+        PlayerPrefs.SetFloat("RotationalOffsetY", (rotationalOffset.y));
+        PlayerPrefs.SetFloat("RotationalOffsetZ", (rotationalOffset.z));
         players[1].transform.GetComponent<UserSyncPosition>().Offset = true;
     }
 

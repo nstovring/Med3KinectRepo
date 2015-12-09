@@ -53,11 +53,17 @@ public class UserController : NetworkBehaviour {
     [Client]
     void Update ()
     {
-        if (Input.anyKeyDown)
+        if (Input.GetKeyUp(KeyCode.S))
         {
             Cmd_SpawnObjects();
         }
-
+        if (Input.GetKeyUp(KeyCode.O))
+        {
+            foreach (var i in users)
+            {
+                i.GetComponent<UserSyncPosition>().Offset = true;
+            }
+        }
         manager = KinectManager.Instance;
         if (Logging)
         {
@@ -80,7 +86,6 @@ public class UserController : NetworkBehaviour {
 
                 if (skeletonData.eTrackingState == KinectWrapper.NuiSkeletonTrackingState.SkeletonTracked)
                 {
-
                     if (!allUsers.Contains(userId))
                     {
                         if (Logging)
@@ -90,7 +95,6 @@ public class UserController : NetworkBehaviour {
                         allUsers.Add(userId);
                     }
                     userSyncPosition.MoveWithUser(skeletonPos);
-                    //userSyncPosition.CmdProvidePositionToServer(skeletonPos, Vector3.zero);
                 }
                 else
                 {

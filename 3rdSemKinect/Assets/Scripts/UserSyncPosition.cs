@@ -134,6 +134,7 @@ public class UserSyncPosition : NetworkBehaviour
             transform.position = posPointMan;
             posPointMan += offsetCalculator.positionalOffset;
             transform.position = posPointMan;
+            CmdProvidePositionToServer(transform.position, Vector3.zero);
         }
         else
         {

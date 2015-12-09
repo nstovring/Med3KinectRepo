@@ -43,4 +43,5 @@ public class Logger : MonoBehaviour
             file.WriteLine(tracking + "\t" + position + "\t UserID:" + "\t" + id + "\t" + "Time:" + "\t" + time);
         }
     }
+
 }
