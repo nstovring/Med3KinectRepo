@@ -34,11 +34,11 @@ public class UserController : NetworkBehaviour {
         for (int i = 0; i < users.Length; i++)
         {
             users[i] = Instantiate(prefab, initialPosVector3, Quaternion.identity) as GameObject;
+            users[i].transform.parent = transform;
             NetworkServer.Spawn(users[i]);
             UserSyncPosition userSyncPosition = users[i].transform.GetComponent<UserSyncPosition>();
             userSyncPosition.isCalibrationUser = false;
-            userSyncPosition.Initialize(" " + (GetComponent<NetworkIdentity>().netId.Value - 1), RandomColor());
-            users[i].transform.tag = "SubUser" + (GetComponent<NetworkIdentity>().netId.Value - 1);
+            userSyncPosition.Initialize("" + (GetComponent<NetworkIdentity>().netId.Value - 1), RandomColor());
         }
         Rpc_SpawnObjects();
     }
@@ -48,9 +48,14 @@ public class UserController : NetworkBehaviour {
     {
         if (isLocalPlayer)
         {
+            Debug.Log("Finding Players");
             for (int i = 0; i < users.Length; i++)
             {
-                users[i] = GameObject.FindGameObjectWithTag("SubUser"+ (GetComponent<NetworkIdentity>().netId.Value - 1));
+                users[i] = transform.GetChild(i).gameObject;
+            }
+            for (int i = 0; i < users.Length; i++)
+            {
+                users[i] = GameObject.Find("SubUser "+ (GetComponent<NetworkIdentity>().netId.Value - 1));
             }
         }
     }
