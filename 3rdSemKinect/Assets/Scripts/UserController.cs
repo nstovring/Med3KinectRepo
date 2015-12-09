@@ -6,7 +6,8 @@ using System.IO;
 using System.Text;
 using UnityEngine.Networking;
 
-public class UserController : NetworkBehaviour {
+public class UserController : NetworkBehaviour
+{
 
     private KinectWrapper.NuiSkeletonFrame skeletonFrame;
     public KinectManager manager;
@@ -14,7 +15,7 @@ public class UserController : NetworkBehaviour {
     public GameObject[] users = new GameObject[6];
     public GameObject prefab;
 
-    Vector3 initialPosVector3 = new Vector3(300,0,0);
+    Vector3 initialPosVector3 = new Vector3(300, 0, 0);
 
     public List<uint> allUsers;
     private OffsetCalculator offsetCalculator;
@@ -25,7 +26,7 @@ public class UserController : NetworkBehaviour {
     {
         base.OnStartClient();
         //int = 0;
-        
+
         allUsers = new List<uint>();
     }
     [Command]
@@ -34,8 +35,8 @@ public class UserController : NetworkBehaviour {
         for (int i = 0; i < users.Length; i++)
         {
             users[i] = Instantiate(prefab, initialPosVector3, Quaternion.identity) as GameObject;
-            users[i].transform.parent = transform;
             NetworkServer.Spawn(users[i]);
+            users[i].transform.parent = transform;
             UserSyncPosition userSyncPosition = users[i].transform.GetComponent<UserSyncPosition>();
             userSyncPosition.isCalibrationUser = false;
             userSyncPosition.Initialize("" + (GetComponent<NetworkIdentity>().netId.Value - 1), RandomColor());
@@ -48,14 +49,10 @@ public class UserController : NetworkBehaviour {
     {
         if (isLocalPlayer)
         {
-            Debug.Log("Finding Players");
             for (int i = 0; i < users.Length; i++)
             {
-                users[i] = transform.GetChild(i).gameObject;
-            }
-            for (int i = 0; i < users.Length; i++)
-            {
-                users[i] = GameObject.Find("SubUser "+ (GetComponent<NetworkIdentity>().netId.Value - 1));
+                users[i] = GameObject.Find("SubUser " + (GetComponent<NetworkIdentity>().netId.Value - 1));
+                users[i].transform.parent = transform;
             }
         }
     }
@@ -70,7 +67,7 @@ public class UserController : NetworkBehaviour {
 
     // Update is called once per frame
     [Client]
-    void Update ()
+    void Update()
     {
         manager = KinectManager.Instance;
 
@@ -139,7 +136,7 @@ public class UserController : NetworkBehaviour {
         }
     }
 
-    
+
 
     public bool MirroredMovement { get; set; }
 

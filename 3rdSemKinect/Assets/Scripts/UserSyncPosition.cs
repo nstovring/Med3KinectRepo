@@ -120,7 +120,7 @@ public class UserSyncPosition : NetworkBehaviour
         }
     }
 
-    [Server]
+    [Client]
     public void MoveWithUser(Vector3 posPointMan)
     {
         offsetCalculator = OffsetCalculator.offsetCalculator;
