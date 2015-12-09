@@ -859,242 +859,246 @@ public class KinectManager : MonoBehaviour
 
 	void Awake()
 	{
-		//CalibrationText = GameObject.Find("CalibrationText");
-		int hr = 0;
-		
-		try
-		{
-			hr = KinectWrapper.NuiInitialize(KinectWrapper.NuiInitializeFlags.UsesSkeleton |
-				KinectWrapper.NuiInitializeFlags.UsesDepthAndPlayerIndex |
-				(ComputeColorMap ? KinectWrapper.NuiInitializeFlags.UsesColor : 0));
-            if (hr != 0)
-			{
-            	throw new Exception("NuiInitialize Failed");
-			}
-			
-			hr = KinectWrapper.NuiSkeletonTrackingEnable(IntPtr.Zero, 8);  // 0, 12,8
-			if (hr != 0)
-			{
-				throw new Exception("Cannot initialize Skeleton Data");
-			}
-			
-			depthStreamHandle = IntPtr.Zero;
-			if(ComputeUserMap)
-			{
-				hr = KinectWrapper.NuiImageStreamOpen(KinectWrapper.NuiImageType.DepthAndPlayerIndex, 
-					KinectWrapper.Constants.DepthImageResolution, 0, 2, IntPtr.Zero, ref depthStreamHandle);
-				if (hr != 0)
-				{
-					throw new Exception("Cannot open depth stream");
-				}
-			}
-			
-			colorStreamHandle = IntPtr.Zero;
-			if(ComputeColorMap)
-			{
-				hr = KinectWrapper.NuiImageStreamOpen(KinectWrapper.NuiImageType.Color, 
-					KinectWrapper.Constants.ColorImageResolution, 0, 2, IntPtr.Zero, ref colorStreamHandle);
-				if (hr != 0)
-				{
-					throw new Exception("Cannot open color stream");
-				}
-			}
+        //CalibrationText = GameObject.Find("CalibrationText");
+	    if (Input.GetKeyUp(KeyCode.K))
+	    {
 
-			// set kinect elevation angle
-			KinectWrapper.NuiCameraElevationSetAngle(SensorAngle);
-			
-			// init skeleton structures
-			skeletonFrame = new KinectWrapper.NuiSkeletonFrame() 
-							{ 
-								SkeletonData = new KinectWrapper.NuiSkeletonData[KinectWrapper.Constants.NuiSkeletonCount] 
-							};
-			
-			// values used to pass to smoothing function
-			smoothParameters = new KinectWrapper.NuiTransformSmoothParameters();
-			
-			switch(smoothing)
-			{
-				case Smoothing.Default:
-					smoothParameters.fSmoothing = 0.5f;
-					smoothParameters.fCorrection = 0.5f;
-					smoothParameters.fPrediction = 0.5f;
-					smoothParameters.fJitterRadius = 0.05f;
-					smoothParameters.fMaxDeviationRadius = 0.04f;
-					break;
-				case Smoothing.Medium:
-					smoothParameters.fSmoothing = 0.5f;
-					smoothParameters.fCorrection = 0.1f;
-					smoothParameters.fPrediction = 0.5f;
-					smoothParameters.fJitterRadius = 0.1f;
-					smoothParameters.fMaxDeviationRadius = 0.1f;
-					break;
-				case Smoothing.Aggressive:
-					smoothParameters.fSmoothing = 0.7f;
-					smoothParameters.fCorrection = 0.3f;
-					smoothParameters.fPrediction = 1.0f;
-					smoothParameters.fJitterRadius = 1.0f;
-					smoothParameters.fMaxDeviationRadius = 1.0f;
-					break;
-			}
-			
-			// init the tracking state filter
-			trackingStateFilter = new TrackingStateFilter[KinectWrapper.Constants.NuiSkeletonMaxTracked];
-			for(int i = 0; i < trackingStateFilter.Length; i++)
-			{
-				trackingStateFilter[i] = new TrackingStateFilter();
-				trackingStateFilter[i].Init();
-			}
-			
-			// init the bone orientation filter
-			boneOrientationFilter = new BoneOrientationsFilter[KinectWrapper.Constants.NuiSkeletonMaxTracked];
-			for(int i = 0; i < boneOrientationFilter.Length; i++)
-			{
-				boneOrientationFilter[i] = new BoneOrientationsFilter();
-				boneOrientationFilter[i].Init();
-			}
-			
-			// init the clipped legs filter
-			clippedLegsFilter = new ClippedLegsFilter[KinectWrapper.Constants.NuiSkeletonMaxTracked];
-			for(int i = 0; i < clippedLegsFilter.Length; i++)
-			{
-				clippedLegsFilter[i] = new ClippedLegsFilter();
-			}
+	        int hr = 0;
 
-			// init the bone orientation constraints
-			boneConstraintsFilter = new BoneOrientationsConstraint();
-			boneConstraintsFilter.AddDefaultConstraints();
-			// init the self intersection constraints
-			selfIntersectionConstraint = new SelfIntersectionConstraint();
-			
-			// create arrays for joint positions and joint orientations
-			int skeletonJointsCount = (int)KinectWrapper.NuiSkeletonPositionIndex.Count;
-			
-			player1JointsTracked = new bool[skeletonJointsCount];
-			player2JointsTracked = new bool[skeletonJointsCount];
-			player1PrevTracked = new bool[skeletonJointsCount];
-			player2PrevTracked = new bool[skeletonJointsCount];
-			
-			player1JointsPos = new Vector3[skeletonJointsCount];
-			player2JointsPos = new Vector3[skeletonJointsCount];
-			
-			player1JointsOri = new Matrix4x4[skeletonJointsCount];
-			player2JointsOri = new Matrix4x4[skeletonJointsCount];
-			
-			gestureTrackingAtTime = new float[KinectWrapper.Constants.NuiSkeletonMaxTracked];
-			
-			//create the transform matrix that converts from kinect-space to world-space
-			Quaternion quatTiltAngle = new Quaternion();
-			quatTiltAngle.eulerAngles = new Vector3(-SensorAngle, 0.0f, 0.0f);
-			
-			//float heightAboveHips = SensorHeight - 1.0f;
-			
-			// transform matrix - kinect to world
-			//kinectToWorld.SetTRS(new Vector3(0.0f, heightAboveHips, 0.0f), quatTiltAngle, Vector3.one);
-			kinectToWorld.SetTRS(new Vector3(0.0f, SensorHeight, 0.0f), quatTiltAngle, Vector3.one);
-			flipMatrix = Matrix4x4.identity;
-			flipMatrix[2, 2] = -1;
-			
-			instance = this;
-			DontDestroyOnLoad(gameObject);
-		}
-		catch(DllNotFoundException e)
-		{
-			string message = "Please check the Kinect SDK installation.";
-			Debug.LogError(message);
-			Debug.LogError(e.ToString());
-			if(CalibrationText != null)
-				CalibrationText.GetComponent<GUIText>().text = message;
-				
-			return;
-		}
-		catch (Exception e)
-		{
-			string message = e.Message + " - " + KinectWrapper.GetNuiErrorString(hr);
-			Debug.LogError(message);
-			Debug.LogError(e.ToString());
-			if(CalibrationText != null)
-				CalibrationText.GetComponent<GUIText>().text = message;
-				
-			return;
-		}
-		
-		if(ComputeUserMap)
-		{
-	        // Initialize depth & label map related stuff
-	        usersMapSize = KinectWrapper.GetDepthWidth() * KinectWrapper.GetDepthHeight();
-	        usersLblTex = new Texture2D(KinectWrapper.GetDepthWidth(), KinectWrapper.GetDepthHeight());
-	        usersMapColors = new Color32[usersMapSize];
-			usersPrevState = new ushort[usersMapSize];
+	        try
+	        {
+	            hr = KinectWrapper.NuiInitialize(KinectWrapper.NuiInitializeFlags.UsesSkeleton |
+	                                             KinectWrapper.NuiInitializeFlags.UsesDepthAndPlayerIndex |
+	                                             (ComputeColorMap ? KinectWrapper.NuiInitializeFlags.UsesColor : 0));
+	            if (hr != 0)
+	            {
+	                throw new Exception("NuiInitialize Failed");
+	            }
 
-	        usersDepthMap = new ushort[usersMapSize];
-	        usersHistogramMap = new float[8192];
-		}
-		
-		if(ComputeColorMap)
-		{
-			// Initialize color map related stuff
-	        usersClrTex = new Texture2D(KinectWrapper.GetColorWidth(), KinectWrapper.GetColorHeight());
+	            hr = KinectWrapper.NuiSkeletonTrackingEnable(IntPtr.Zero, 8); // 0, 12,8
+	            if (hr != 0)
+	            {
+	                throw new Exception("Cannot initialize Skeleton Data");
+	            }
 
-			colorImage = new Color32[KinectWrapper.GetColorWidth() * KinectWrapper.GetColorHeight()];
-			usersColorMap = new byte[colorImage.Length << 2];
-		}
-		
-		// try to automatically find the available avatar controllers in the scene
-		if(Player1Avatars.Count == 0 && Player2Avatars.Count == 0)
-		{
-			AvatarController[] avatars = FindObjectsOfType(typeof(AvatarController)) as AvatarController[];
-			
-			foreach(AvatarController avatar in avatars)
-			{
-				Player1Avatars.Add(avatar.gameObject);
-			}
-		}
-		
-        // Initialize user list to contain ALL users.
-        allUsers = new List<uint>();
-        
-		// Pull the AvatarController from each of the players Avatars.
-		Player1Controllers = new List<AvatarController>();
-		Player2Controllers = new List<AvatarController>();
-		
-		// Add each of the avatars' controllers into a list for each player.
-		foreach(GameObject avatar in Player1Avatars)
-		{
-			if(avatar != null && avatar.activeInHierarchy)
-			{
-				Player1Controllers.Add(avatar.GetComponent<AvatarController>());
-			}
-		}
-		
-		foreach(GameObject avatar in Player2Avatars)
-		{
-			if(avatar != null && avatar.activeInHierarchy)
-			{
-				Player2Controllers.Add(avatar.GetComponent<AvatarController>());
-			}
-		}
-		
-		// create the list of gesture listeners
-		gestureListeners = new List<KinectGestures.GestureListenerInterface>();
-		
-		foreach(MonoBehaviour script in GestureListeners)
-		{
-			if(script && (script is KinectGestures.GestureListenerInterface))
-			{
-				KinectGestures.GestureListenerInterface listener = (KinectGestures.GestureListenerInterface)script;
-				gestureListeners.Add(listener);
-			}
-		}
-		
-		// GUI Text.
-		if(CalibrationText != null)
-		{
-			CalibrationText.GetComponent<GUIText>().text = "WAITING FOR USERS";
-		}
-		
-		Debug.Log("Waiting for users.");
-			
-		KinectInitialized = true;
+	            depthStreamHandle = IntPtr.Zero;
+	            if (ComputeUserMap)
+	            {
+	                hr = KinectWrapper.NuiImageStreamOpen(KinectWrapper.NuiImageType.DepthAndPlayerIndex,
+	                    KinectWrapper.Constants.DepthImageResolution, 0, 2, IntPtr.Zero, ref depthStreamHandle);
+	                if (hr != 0)
+	                {
+	                    throw new Exception("Cannot open depth stream");
+	                }
+	            }
+
+	            colorStreamHandle = IntPtr.Zero;
+	            if (ComputeColorMap)
+	            {
+	                hr = KinectWrapper.NuiImageStreamOpen(KinectWrapper.NuiImageType.Color,
+	                    KinectWrapper.Constants.ColorImageResolution, 0, 2, IntPtr.Zero, ref colorStreamHandle);
+	                if (hr != 0)
+	                {
+	                    throw new Exception("Cannot open color stream");
+	                }
+	            }
+
+	            // set kinect elevation angle
+	            KinectWrapper.NuiCameraElevationSetAngle(SensorAngle);
+
+	            // init skeleton structures
+	            skeletonFrame = new KinectWrapper.NuiSkeletonFrame()
+	            {
+	                SkeletonData = new KinectWrapper.NuiSkeletonData[KinectWrapper.Constants.NuiSkeletonCount]
+	            };
+
+	            // values used to pass to smoothing function
+	            smoothParameters = new KinectWrapper.NuiTransformSmoothParameters();
+
+	            switch (smoothing)
+	            {
+	                case Smoothing.Default:
+	                    smoothParameters.fSmoothing = 0.5f;
+	                    smoothParameters.fCorrection = 0.5f;
+	                    smoothParameters.fPrediction = 0.5f;
+	                    smoothParameters.fJitterRadius = 0.05f;
+	                    smoothParameters.fMaxDeviationRadius = 0.04f;
+	                    break;
+	                case Smoothing.Medium:
+	                    smoothParameters.fSmoothing = 0.5f;
+	                    smoothParameters.fCorrection = 0.1f;
+	                    smoothParameters.fPrediction = 0.5f;
+	                    smoothParameters.fJitterRadius = 0.1f;
+	                    smoothParameters.fMaxDeviationRadius = 0.1f;
+	                    break;
+	                case Smoothing.Aggressive:
+	                    smoothParameters.fSmoothing = 0.7f;
+	                    smoothParameters.fCorrection = 0.3f;
+	                    smoothParameters.fPrediction = 1.0f;
+	                    smoothParameters.fJitterRadius = 1.0f;
+	                    smoothParameters.fMaxDeviationRadius = 1.0f;
+	                    break;
+	            }
+
+	            // init the tracking state filter
+	            trackingStateFilter = new TrackingStateFilter[KinectWrapper.Constants.NuiSkeletonMaxTracked];
+	            for (int i = 0; i < trackingStateFilter.Length; i++)
+	            {
+	                trackingStateFilter[i] = new TrackingStateFilter();
+	                trackingStateFilter[i].Init();
+	            }
+
+	            // init the bone orientation filter
+	            boneOrientationFilter = new BoneOrientationsFilter[KinectWrapper.Constants.NuiSkeletonMaxTracked];
+	            for (int i = 0; i < boneOrientationFilter.Length; i++)
+	            {
+	                boneOrientationFilter[i] = new BoneOrientationsFilter();
+	                boneOrientationFilter[i].Init();
+	            }
+
+	            // init the clipped legs filter
+	            clippedLegsFilter = new ClippedLegsFilter[KinectWrapper.Constants.NuiSkeletonMaxTracked];
+	            for (int i = 0; i < clippedLegsFilter.Length; i++)
+	            {
+	                clippedLegsFilter[i] = new ClippedLegsFilter();
+	            }
+
+	            // init the bone orientation constraints
+	            boneConstraintsFilter = new BoneOrientationsConstraint();
+	            boneConstraintsFilter.AddDefaultConstraints();
+	            // init the self intersection constraints
+	            selfIntersectionConstraint = new SelfIntersectionConstraint();
+
+	            // create arrays for joint positions and joint orientations
+	            int skeletonJointsCount = (int) KinectWrapper.NuiSkeletonPositionIndex.Count;
+
+	            player1JointsTracked = new bool[skeletonJointsCount];
+	            player2JointsTracked = new bool[skeletonJointsCount];
+	            player1PrevTracked = new bool[skeletonJointsCount];
+	            player2PrevTracked = new bool[skeletonJointsCount];
+
+	            player1JointsPos = new Vector3[skeletonJointsCount];
+	            player2JointsPos = new Vector3[skeletonJointsCount];
+
+	            player1JointsOri = new Matrix4x4[skeletonJointsCount];
+	            player2JointsOri = new Matrix4x4[skeletonJointsCount];
+
+	            gestureTrackingAtTime = new float[KinectWrapper.Constants.NuiSkeletonMaxTracked];
+
+	            //create the transform matrix that converts from kinect-space to world-space
+	            Quaternion quatTiltAngle = new Quaternion();
+	            quatTiltAngle.eulerAngles = new Vector3(-SensorAngle, 0.0f, 0.0f);
+
+	            //float heightAboveHips = SensorHeight - 1.0f;
+
+	            // transform matrix - kinect to world
+	            //kinectToWorld.SetTRS(new Vector3(0.0f, heightAboveHips, 0.0f), quatTiltAngle, Vector3.one);
+	            kinectToWorld.SetTRS(new Vector3(0.0f, SensorHeight, 0.0f), quatTiltAngle, Vector3.one);
+	            flipMatrix = Matrix4x4.identity;
+	            flipMatrix[2, 2] = -1;
+
+	            instance = this;
+	            DontDestroyOnLoad(gameObject);
+	        }
+	        catch (DllNotFoundException e)
+	        {
+	            string message = "Please check the Kinect SDK installation.";
+	            Debug.LogError(message);
+	            Debug.LogError(e.ToString());
+	            if (CalibrationText != null)
+	                CalibrationText.GetComponent<GUIText>().text = message;
+
+	            return;
+	        }
+	        catch (Exception e)
+	        {
+	            string message = e.Message + " - " + KinectWrapper.GetNuiErrorString(hr);
+	            Debug.LogError(message);
+	            Debug.LogError(e.ToString());
+	            if (CalibrationText != null)
+	                CalibrationText.GetComponent<GUIText>().text = message;
+
+	            return;
+	        }
+
+	        if (ComputeUserMap)
+	        {
+	            // Initialize depth & label map related stuff
+	            usersMapSize = KinectWrapper.GetDepthWidth()*KinectWrapper.GetDepthHeight();
+	            usersLblTex = new Texture2D(KinectWrapper.GetDepthWidth(), KinectWrapper.GetDepthHeight());
+	            usersMapColors = new Color32[usersMapSize];
+	            usersPrevState = new ushort[usersMapSize];
+
+	            usersDepthMap = new ushort[usersMapSize];
+	            usersHistogramMap = new float[8192];
+	        }
+
+	        if (ComputeColorMap)
+	        {
+	            // Initialize color map related stuff
+	            usersClrTex = new Texture2D(KinectWrapper.GetColorWidth(), KinectWrapper.GetColorHeight());
+
+	            colorImage = new Color32[KinectWrapper.GetColorWidth()*KinectWrapper.GetColorHeight()];
+	            usersColorMap = new byte[colorImage.Length << 2];
+	        }
+
+	        // try to automatically find the available avatar controllers in the scene
+	        if (Player1Avatars.Count == 0 && Player2Avatars.Count == 0)
+	        {
+	            AvatarController[] avatars = FindObjectsOfType(typeof (AvatarController)) as AvatarController[];
+
+	            foreach (AvatarController avatar in avatars)
+	            {
+	                Player1Avatars.Add(avatar.gameObject);
+	            }
+	        }
+
+	        // Initialize user list to contain ALL users.
+	        allUsers = new List<uint>();
+
+	        // Pull the AvatarController from each of the players Avatars.
+	        Player1Controllers = new List<AvatarController>();
+	        Player2Controllers = new List<AvatarController>();
+
+	        // Add each of the avatars' controllers into a list for each player.
+	        foreach (GameObject avatar in Player1Avatars)
+	        {
+	            if (avatar != null && avatar.activeInHierarchy)
+	            {
+	                Player1Controllers.Add(avatar.GetComponent<AvatarController>());
+	            }
+	        }
+
+	        foreach (GameObject avatar in Player2Avatars)
+	        {
+	            if (avatar != null && avatar.activeInHierarchy)
+	            {
+	                Player2Controllers.Add(avatar.GetComponent<AvatarController>());
+	            }
+	        }
+
+	        // create the list of gesture listeners
+	        gestureListeners = new List<KinectGestures.GestureListenerInterface>();
+
+	        foreach (MonoBehaviour script in GestureListeners)
+	        {
+	            if (script && (script is KinectGestures.GestureListenerInterface))
+	            {
+	                KinectGestures.GestureListenerInterface listener = (KinectGestures.GestureListenerInterface) script;
+	                gestureListeners.Add(listener);
+	            }
+	        }
+
+	        // GUI Text.
+	        if (CalibrationText != null)
+	        {
+	            CalibrationText.GetComponent<GUIText>().text = "WAITING FOR USERS";
+	        }
+
+	        Debug.Log("Waiting for users.");
+
+	        KinectInitialized = true;
+	    }
 	}
 	
 	void Update()

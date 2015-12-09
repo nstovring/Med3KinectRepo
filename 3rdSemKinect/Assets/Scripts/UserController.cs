@@ -25,8 +25,6 @@ public class UserController : NetworkBehaviour
     public override void OnStartClient()
     {
         base.OnStartClient();
-        //int = 0;
-
         allUsers = new List<uint>();
     }
     [Command]
@@ -35,11 +33,10 @@ public class UserController : NetworkBehaviour
         for (int i = 0; i < users.Length; i++)
         {
             users[i] = Instantiate(prefab, initialPosVector3, Quaternion.identity) as GameObject;
-            NetworkServer.Spawn(users[i]);
-            users[i].transform.parent = transform;
             UserSyncPosition userSyncPosition = users[i].transform.GetComponent<UserSyncPosition>();
             userSyncPosition.isCalibrationUser = false;
             userSyncPosition.Initialize("" + (GetComponent<NetworkIdentity>().netId.Value - 1), RandomColor());
+            NetworkServer.SpawnWithClientAuthority(users[i],connectionToClient);
         }
         Rpc_SpawnObjects();
     }
@@ -49,11 +46,7 @@ public class UserController : NetworkBehaviour
     {
         if (isLocalPlayer)
         {
-            for (int i = 0; i < users.Length; i++)
-            {
-                users[i] = GameObject.Find("SubUser " + (GetComponent<NetworkIdentity>().netId.Value - 1));
-                users[i].transform.parent = transform;
-            }
+          
         }
     }
 

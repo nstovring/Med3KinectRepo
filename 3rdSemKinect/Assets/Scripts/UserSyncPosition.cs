@@ -94,6 +94,7 @@ public class UserSyncPosition : NetworkBehaviour
         this.userColor = userColor;
         transform.GetComponent<MeshRenderer>().material.color = userColor;
         transform.name = objectName;
+        transform.parent = GameObject.Find("UserController").transform;
         Cmd_ChangeIdentity(userColor, objectName);
     }
 
