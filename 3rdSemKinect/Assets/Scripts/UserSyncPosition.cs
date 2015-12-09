@@ -88,6 +88,15 @@ public class UserSyncPosition : NetworkBehaviour
         Cmd_ChangeIdentity(userColor, objectName);
     }
 
+    public void Initialize(string id, Color userColor)
+    {
+        this.objectName = "SubUser " + id;
+        this.userColor = userColor;
+        transform.GetComponent<MeshRenderer>().material.color = userColor;
+        transform.name = objectName;
+        Cmd_ChangeIdentity(userColor, objectName);
+    }
+
     [Client]
     public void MoveWithUser()
     {
@@ -111,7 +120,7 @@ public class UserSyncPosition : NetworkBehaviour
         }
     }
 
-    [Client]
+    [Server]
     public void MoveWithUser(Vector3 posPointMan)
     {
         offsetCalculator = OffsetCalculator.offsetCalculator;

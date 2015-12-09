@@ -16,7 +16,7 @@ public class UserController : NetworkBehaviour {
 
     Vector3 initialPosVector3 = new Vector3(300,0,0);
 
-    private List<uint> allUsers;
+    public List<uint> allUsers;
     private OffsetCalculator offsetCalculator;
 
     // Use this for initialization
@@ -24,16 +24,14 @@ public class UserController : NetworkBehaviour {
     public override void OnStartClient()
     {
         base.OnStartClient();
+        //int = 0;
         for (int i = 0; i < users.Length; i++)
         {
             users[i] = Instantiate(prefab, initialPosVector3, Quaternion.identity) as GameObject;
+            NetworkServer.Spawn(users[i]);
             UserSyncPosition userSyncPosition = users[i].transform.GetComponent<UserSyncPosition>();
             userSyncPosition.isCalibrationUser = false;
-            //userSyncPosition.OnStartLocalPlayer();
-            //userSyncPosition.
-            users[i].transform.GetComponent<MeshRenderer>().material.color = RandomColor();
-            NetworkServer.Spawn(users[i]);
-            //Instantiate a cube for each user tracked;
+            userSyncPosition.Initialize(" " + (GetComponent<NetworkIdentity>().netId.Value-1) +" " + i, RandomColor());
         }
         allUsers = new List<uint>();
     }
@@ -43,38 +41,53 @@ public class UserController : NetworkBehaviour {
         return new Color(Random.value, Random.value, Random.value);
     }
 
+    private float timePassed;
+    public bool Logging;
+
     // Update is called once per frame
-    [ClientCallback]
     void Update ()
     {
+        if (Logging)
+        {
+            timePassed += Time.deltaTime;
+        }
         if (manager.KinectInitialized)
         {
             skeletonFrame = manager.skeletonFrame;
             for (int i = 0; i < skeletonFrame.SkeletonData.Length; i++)
             {
                 KinectWrapper.NuiSkeletonData skeletonData = skeletonFrame.SkeletonData[i];
-                Vector3 skeletonPos = manager.kinectToWorld.MultiplyPoint3x4(skeletonData.Position);
                 UserSyncPosition userSyncPosition = users[i].GetComponent<UserSyncPosition>();
+                Vector3 skeletonPos = manager.kinectToWorld.MultiplyPoint3x4(skeletonData.Position);
 
                 uint userId = skeletonData.dwTrackingID;
 
                 if (skeletonData.eTrackingState == KinectWrapper.NuiSkeletonTrackingState.SkeletonTracked)
                 {
+
                     if (!allUsers.Contains(userId))
                     {
+                        if (Logging)
+                        {
+                            Logger.LogData("Tracking Begun: ", skeletonPos, userId, timePassed);
+                        }
                         allUsers.Add(userId);
                     }
-                    //userSyncPosition.MoveWithUser(skeletonPos);
-                    //userSyncPosition.CmdProvidePositionToServer(skeletonPos, Vector3.zero);
-                    users[i].transform.position = skeletonPos;
+                    userSyncPosition.MoveWithUser(skeletonPos);
+                    userSyncPosition.CmdProvidePositionToServer(skeletonPos, Vector3.zero);
                 }
                 else
                 {
                     if (allUsers.Contains(userId))
                     {
+                        if (Logging)
+                        {
+                            Logger.LogData("Tracking Lost: ", skeletonPos, userId, timePassed);
+                        }
                         allUsers.Remove(userId);
                     }
-                    users[i].transform.position = initialPosVector3;
+                    userSyncPosition.MoveWithUser(initialPosVector3);
+                    userSyncPosition.CmdProvidePositionToServer(initialPosVector3, Vector3.zero);
                 }
             }
         }
