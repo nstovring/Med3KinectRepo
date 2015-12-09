@@ -9,7 +9,7 @@ public class UserSyncPosition : NetworkBehaviour
     [SyncVar] private Vector3 syncRot;
 
     [SyncVar] public bool positionalOffset;
-    [SyncVar] public bool rotationalOffset;
+    [SyncVar] public bool Offset;
 
     [SyncVar] private Color userColor;
     [SyncVar] private string objectName;
@@ -25,9 +25,13 @@ public class UserSyncPosition : NetworkBehaviour
     // Update is called once per frame
     [ClientCallback]
     void FixedUpdate () {
-	    TransmitPosition();
+        if (isCalibrationUser)
+        {
+            TransmitPosition();
+            
+        }
         LerpPosition();
-	}
+    }
 
     void LerpPosition()
     {
@@ -41,23 +45,24 @@ public class UserSyncPosition : NetworkBehaviour
     }
 
     [Command]
-    void CmdProvidePositionToServer(Vector3 pos, Vector3 rot)
+    public void CmdProvidePositionToServer(Vector3 pos, Vector3 rot)
     {
         syncPos = pos;
         syncRot = rot;
     }
 
     [Command]
-    void Cmd_ChangeIdentity(Color col, string objectName)
+    public void Cmd_ChangeIdentity(Color col, string objectName)
     {
         this.objectName = objectName;
         userColor = col;
     }
 
+    public bool isCalibrationUser = true;
 
-    void TransmitPosition()
+    public void TransmitPosition()
     {
-        if (isLocalPlayer)
+        if (isLocalPlayer && isCalibrationUser)
         {
             if (manager == null)
             {
@@ -84,7 +89,7 @@ public class UserSyncPosition : NetworkBehaviour
     }
 
     [Client]
-    private void MoveWithUser()
+    public void MoveWithUser()
     {
         offsetCalculator = OffsetCalculator.offsetCalculator;
         uint playerID = manager != null ? manager.GetPlayer1ID() : 0;
@@ -92,15 +97,11 @@ public class UserSyncPosition : NetworkBehaviour
         posPointMan.z = !MirroredMovement ? -posPointMan.z : posPointMan.z;
         posPointMan.x *= 1;
 
-        if (rotationalOffset)
+        if (Offset)
         {
             Quaternion direction = Quaternion.AngleAxis(offsetCalculator.rotationalOffset.y, Vector3.up);
             posPointMan = (direction * posPointMan) != Vector3.zero ? (direction * posPointMan) : posPointMan;
             transform.position = posPointMan;
-        }
-
-        if (positionalOffset)
-        {
             posPointMan += offsetCalculator.positionalOffset;
             transform.position = posPointMan;
         }
@@ -108,8 +109,27 @@ public class UserSyncPosition : NetworkBehaviour
         {
             transform.position = posPointMan;
         }
+    }
 
+    [Client]
+    public void MoveWithUser(Vector3 posPointMan)
+    {
+        offsetCalculator = OffsetCalculator.offsetCalculator;
+        posPointMan.z = !MirroredMovement ? -posPointMan.z : posPointMan.z;
+        posPointMan.x *= 1;
 
+        if (Offset)
+        {
+            Quaternion direction = Quaternion.AngleAxis(offsetCalculator.rotationalOffset.y, Vector3.up);
+            posPointMan = (direction * posPointMan) != Vector3.zero ? (direction * posPointMan) : posPointMan;
+            transform.position = posPointMan;
+            posPointMan += offsetCalculator.positionalOffset;
+            transform.position = posPointMan;
+        }
+        else
+        {
+            transform.position = posPointMan;
+        }
     }
 
     [Client]
@@ -133,7 +153,7 @@ public class UserSyncPosition : NetworkBehaviour
 
                 Quaternion rotationShoulders = Quaternion.FromToRotation(Vector3.right, dirLeftRight);
 
-                if (rotationalOffset)
+                if (Offset)
                 {
                     rotationShoulders.eulerAngles -= new Vector3(0,offsetCalculator.rotationalOffset.y,0);
                     myTransform.rotation = rotationShoulders;
