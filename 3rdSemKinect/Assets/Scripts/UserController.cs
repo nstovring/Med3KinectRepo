@@ -103,6 +103,7 @@ public class UserController : NetworkBehaviour
             foreach (var i in users)
             {
                 i.GetComponent<UserSyncPosition>().rotationalOffset = true;
+                i.GetComponent<UserSyncPosition>().positionalOffset = true;
             }
         }
     }
@@ -122,26 +123,11 @@ public class UserController : NetworkBehaviour
     {
         manager = KinectManager.Instance;
 
-        //if (Input.GetKeyUp(KeyCode.S) && isLocalPlayer)
-        //{
-        //    Cmd_SpawnObjects();
-        //}
-        //if (Input.GetKeyUp(KeyCode.O) && isLocalPlayer)
-        //{
-        //    foreach (var i in users)
-        //    {
-        //        i.GetComponent<UserSyncPosition>().Offset = true;
-        //    }
-        //}
         if (Logging)
         {
             timePassed += Time.deltaTime;
         }
-        //if (isLocalPlayer && Input.GetAxis("Horizontal")> 0.2f)
-        //{
-        //    UserSyncPosition userSyncPosition = users[0].transform.GetComponent<UserSyncPosition>();
-        //    userSyncPosition.MoveWithUser(users[0].transform.position + new Vector3(Input.GetAxis("Horizontal"), 0));
-        //}
+
 
         if (manager != null && manager.KinectInitialized && isLocalPlayer)
         {

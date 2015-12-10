@@ -76,7 +76,8 @@ public class UserSyncPosition : NetworkBehaviour
             else
             {
                 MoveWithUser();
-                RotateWithUser();
+                TiltWithUser();
+                //RotateWithUser();
                 CmdProvidePositionToServer(myTransform.position, myTransform.rotation.eulerAngles);
             }
         }
@@ -186,4 +187,40 @@ public class UserSyncPosition : NetworkBehaviour
             }
         }
     }
+
+    [Client]
+    private void TiltWithUser()
+    {
+        if (manager.IsUserDetected())
+        {
+            uint userId = manager.GetPlayer1ID();
+
+            if (manager.IsJointTracked(userId, (int)KinectWrapper.NuiSkeletonPositionIndex.HipCenter) &&
+                manager.IsJointTracked(userId, (int)KinectWrapper.NuiSkeletonPositionIndex.ShoulderCenter))
+            {
+                Vector3 posHipCenter = manager.GetJointPosition(userId, (int)KinectWrapper.NuiSkeletonPositionIndex.HipCenter);
+                Vector3 posShoulderCenter = manager.GetJointPosition(userId, (int)KinectWrapper.NuiSkeletonPositionIndex.ShoulderCenter);
+
+                posHipCenter.z = -posHipCenter.z;
+                posShoulderCenter.z = -posShoulderCenter.z;
+
+                Vector3 directionUpDown = posHipCenter - posShoulderCenter;
+                directionUpDown -= Vector3.Project(directionUpDown, Vector3.right);
+
+                Quaternion rotationTorso = Quaternion.FromToRotation(Vector3.up, directionUpDown);
+
+                if (rotationalOffset)
+                {
+                    rotationTorso.eulerAngles -= new Vector3(offsetCalculator.rotationalOffset.x, offsetCalculator.rotationalOffset.y, 0);
+                    myTransform.rotation = rotationTorso;
+                }
+                else
+                {
+                    myTransform.rotation = rotationTorso;
+                }
+            }
+        }
+    }
+
+
 }

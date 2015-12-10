@@ -29,7 +29,7 @@ public class Logger : MonoBehaviour
     static public void LogData(string tracking, Vector3 position, Vector3 rotation, uint id, string time)
     {
         using (StreamWriter file =
-               new StreamWriter(@"C:\Users\nstovring\Documents\GitHub\DeathMapping\Kinects\TestingLogs\LogTracking.txt", true))
+               new StreamWriter(@"C:\Users\nstovring\Documents\GitHub\3rdSemKinect\Kinects\TestingLogs\LogTracking.txt", true))
         {
             file.WriteLine(tracking + "\t" + position + "\t Orientation:" + "\t" + rotation + "\t UserID:" + "\t" + id + "\t" + "Time:" + "\t" + time);
         }
@@ -38,7 +38,7 @@ public class Logger : MonoBehaviour
     static public void LogData(string tracking, Vector3 position, uint id, float time)
     {
         using (StreamWriter file =
-               new StreamWriter(@"C:\Users\nstovring\Documents\GitHub\DeathMapping\Kinects\TestingLogs\LogTracking.txt", true))
+               new StreamWriter(@"C:\Users\nstovring\Documents\GitHub\3rdSemKinect\Kinects\TestingLogs\LogTracking.txt", true))
         {
             file.WriteLine(tracking + "\t" + position + "\t UserID:" + "\t" + id + "\t" + "Time:" + "\t" + time);
         }
