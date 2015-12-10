@@ -5,6 +5,7 @@ using System.Runtime.InteropServices;
 using System.IO;
 using System.Text;
 using UnityEngine.Networking;
+using UnityEngine.UI;
 
 public class UserController : NetworkBehaviour
 {
@@ -15,38 +16,65 @@ public class UserController : NetworkBehaviour
     public GameObject[] users = new GameObject[6];
     public GameObject prefab;
 
-    Vector3 initialPosVector3 = new Vector3(300, 0, 0);
+    readonly Vector3 initialPosVector3 = new Vector3(50, 0, 0);
 
     public List<uint> allUsers;
     private OffsetCalculator offsetCalculator;
 
+
+    public Button[] buttons = new Button[4];
     // Use this for initialization
 
     public override void OnStartClient()
     {
         base.OnStartClient();
         allUsers = new List<uint>();
+        buttons[0] = GameObject.Find("Apply Offset").GetComponent<Button>();
+        buttons[1] = GameObject.Find("Activate Logging").GetComponent<Button>();
+        buttons[2] = GameObject.Find("Deactivate Logging").GetComponent<Button>();
+        buttons[3] = GameObject.Find("Spawn Objects").GetComponent<Button>();
+
+        buttons[0].onClick.AddListener(OffsetObjects);
+        buttons[1].onClick.AddListener(StartLogging);
+        buttons[2].onClick.AddListener(StopLogging);
+        buttons[3].onClick.AddListener(SpawnObjects);
+
     }
     [Command]
     void Cmd_SpawnObjects()
     {
         for (int i = 0; i < users.Length; i++)
         {
+            ClientScene.RegisterPrefab(prefab);
             users[i] = Instantiate(prefab, initialPosVector3, Quaternion.identity) as GameObject;
             UserSyncPosition userSyncPosition = users[i].transform.GetComponent<UserSyncPosition>();
             userSyncPosition.isCalibrationUser = false;
-            userSyncPosition.Initialize("" + (GetComponent<NetworkIdentity>().netId.Value - 1), RandomColor());
+            Color rndColor = RandomColor();
+            userSyncPosition.Initialize((GetComponent<NetworkIdentity>().netId.Value - 1)+ " " + i, rndColor);
             NetworkServer.SpawnWithClientAuthority(users[i],connectionToClient);
+            userSyncPosition.Cmd_ChangeIdentity(rndColor, ("SubUser " + (GetComponent<NetworkIdentity>().netId.Value - 1) + " " + i));
         }
-        Rpc_SpawnObjects();
+        Rpc_SpawnObjects(users);
     }
 
     [ClientRpc]
-    void Rpc_SpawnObjects()
+    void Rpc_SpawnObjects(GameObject[] userGameObjects)
     {
         if (isLocalPlayer)
         {
-          
+            users = userGameObjects;
+            foreach (var i in userGameObjects)
+            {
+                i.transform.parent = transform;
+            }
+        }
+        else
+        {
+            users = userGameObjects;
+            foreach (var i in userGameObjects)
+            {
+                i.transform.parent = transform;
+            }
         }
     }
 
@@ -59,39 +87,73 @@ public class UserController : NetworkBehaviour
     public bool Logging;
 
     // Update is called once per frame
-    [Client]
-    void Update()
-    {
-        manager = KinectManager.Instance;
 
-        if (Input.GetKeyUp(KeyCode.S) && isLocalPlayer)
+    public void SpawnObjects()
+    {
+        if (isLocalPlayer)
         {
             Cmd_SpawnObjects();
         }
-        if (Input.GetKeyUp(KeyCode.O) && isLocalPlayer)
+    }
+
+    public void OffsetObjects()
+    {
+        if (isLocalPlayer)
         {
             foreach (var i in users)
             {
                 i.GetComponent<UserSyncPosition>().Offset = true;
             }
         }
+    }
+
+    public void StartLogging()
+    {
+        Logging = true;
+    }
+
+    public void StopLogging()
+    {
+        Logging = false;
+    }
+
+    [ClientCallback]
+    void Update()
+    {
+        manager = KinectManager.Instance;
+
+        //if (Input.GetKeyUp(KeyCode.S) && isLocalPlayer)
+        //{
+        //    Cmd_SpawnObjects();
+        //}
+        //if (Input.GetKeyUp(KeyCode.O) && isLocalPlayer)
+        //{
+        //    foreach (var i in users)
+        //    {
+        //        i.GetComponent<UserSyncPosition>().Offset = true;
+        //    }
+        //}
         if (Logging)
         {
             timePassed += Time.deltaTime;
         }
-        if (manager.KinectInitialized && isLocalPlayer)
+        //if (isLocalPlayer && Input.GetAxis("Horizontal")> 0.2f)
+        //{
+        //    UserSyncPosition userSyncPosition = users[0].transform.GetComponent<UserSyncPosition>();
+        //    userSyncPosition.MoveWithUser(users[0].transform.position + new Vector3(Input.GetAxis("Horizontal"), 0));
+        //}
+
+        if (manager != null && manager.KinectInitialized && isLocalPlayer)
         {
-            Debug.Log("Kinect initialized and local player");
             skeletonFrame = manager.skeletonFrame;
+
             for (int i = 0; i < skeletonFrame.SkeletonData.Length; i++)
             {
-                Debug.Log("Checking users");
                 if (users[i] == null)
                 {
                     return;
                 }
-
-                Debug.Log("Users exist");
+                Debug.Log("User exist");
 
                 KinectWrapper.NuiSkeletonData skeletonData = skeletonFrame.SkeletonData[i];
                 UserSyncPosition userSyncPosition = users[i].GetComponent<UserSyncPosition>();

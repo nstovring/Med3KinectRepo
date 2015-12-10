@@ -5,8 +5,8 @@ using UnityEngine.Networking;
 public class UserSyncPosition : NetworkBehaviour
 {
 
-    [SyncVar] private Vector3 syncPos;
-    [SyncVar] private Vector3 syncRot;
+    [SyncVar] public Vector3 syncPos;
+    [SyncVar] public Vector3 syncRot;
 
     [SyncVar] public bool positionalOffset;
     [SyncVar] public bool Offset;
@@ -18,17 +18,19 @@ public class UserSyncPosition : NetworkBehaviour
     [SerializeField] private float lerpRate = 15;
 
     public bool MirroredMovement;
+    public bool isCalibrationUser = true;
 
     private KinectManager manager;
     private OffsetCalculator offsetCalculator;
 
+    private UserController PlayerObject;
+
     // Update is called once per frame
-    [ClientCallback]
+   [ClientCallback]
     void FixedUpdate () {
         if (isCalibrationUser)
         {
             TransmitPosition();
-            
         }
         LerpPosition();
     }
@@ -56,9 +58,9 @@ public class UserSyncPosition : NetworkBehaviour
     {
         this.objectName = objectName;
         userColor = col;
+        NetworkServer.Spawn(gameObject);
     }
 
-    public bool isCalibrationUser = true;
 
     public void TransmitPosition()
     {
@@ -90,12 +92,13 @@ public class UserSyncPosition : NetworkBehaviour
 
     public void Initialize(string id, Color userColor)
     {
-        this.objectName = "SubUser " + id;
-        this.userColor = userColor;
-        transform.GetComponent<MeshRenderer>().material.color = userColor;
-        transform.name = objectName;
-        transform.parent = GameObject.Find("UserController").transform;
-        Cmd_ChangeIdentity(userColor, objectName);
+        if (!isLocalPlayer)
+        {
+            this.objectName = "SubUser " + id;
+            this.userColor = userColor;
+            transform.GetComponent<MeshRenderer>().material.color = userColor;
+            transform.name = objectName;
+        }
     }
 
     [Client]

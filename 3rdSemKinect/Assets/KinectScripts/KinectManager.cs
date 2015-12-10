@@ -857,11 +857,10 @@ public class KinectManager : MonoBehaviour
 	
 	//----------------------------------- end of public functions --------------------------------------//
 
-	void Awake()
+	void StartKinect()
 	{
         //CalibrationText = GameObject.Find("CalibrationText");
-	    if (Input.GetKeyUp(KeyCode.K))
-	    {
+	   
 
 	        int hr = 0;
 
@@ -1098,13 +1097,17 @@ public class KinectManager : MonoBehaviour
 	        Debug.Log("Waiting for users.");
 
 	        KinectInitialized = true;
-	    }
 	}
 	
 	void Update()
 	{
-		if(KinectInitialized)
-		{
+
+            if (Input.GetKeyUp(KeyCode.K))
+            {
+                StartKinect();
+            }
+            if (KinectInitialized)
+		   {
 			// needed by the KinectExtras' native wrapper to check for next frames
 			// uncomment the line below, if you use the Extras' wrapper, but none of the Extras' managers
 			//KinectWrapper.UpdateKinectSensor();
