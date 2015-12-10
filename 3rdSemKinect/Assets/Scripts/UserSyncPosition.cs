@@ -9,7 +9,9 @@ public class UserSyncPosition : NetworkBehaviour
     [SyncVar] public Vector3 syncRot;
 
     [SyncVar] public bool positionalOffset;
-    [SyncVar] public bool Offset;
+    [SyncVar] public bool rotationalOffset;
+
+   // [SyncVar] public bool Offset;
 
     [SyncVar] private Color userColor;
     [SyncVar] private string objectName;
@@ -26,7 +28,7 @@ public class UserSyncPosition : NetworkBehaviour
     private UserController PlayerObject;
 
     // Update is called once per frame
-   [ClientCallback]
+    [ClientCallback]
     void FixedUpdate () {
         if (isCalibrationUser)
         {
@@ -110,11 +112,15 @@ public class UserSyncPosition : NetworkBehaviour
         posPointMan.z = !MirroredMovement ? -posPointMan.z : posPointMan.z;
         posPointMan.x *= 1;
 
-        if (Offset)
+        if (rotationalOffset)
         {
             Quaternion direction = Quaternion.AngleAxis(offsetCalculator.rotationalOffset.y, Vector3.up);
             posPointMan = (direction * posPointMan) != Vector3.zero ? (direction * posPointMan) : posPointMan;
             transform.position = posPointMan;
+        }
+
+        if (positionalOffset)
+        {
             posPointMan += offsetCalculator.positionalOffset;
             transform.position = posPointMan;
         }
@@ -131,7 +137,7 @@ public class UserSyncPosition : NetworkBehaviour
         posPointMan.z = !MirroredMovement ? -posPointMan.z : posPointMan.z;
         posPointMan.x *= 1;
 
-        if (Offset)
+        if (rotationalOffset)
         {
             Quaternion direction = Quaternion.AngleAxis(offsetCalculator.rotationalOffset.y, Vector3.up);
             posPointMan = (direction * posPointMan) != Vector3.zero ? (direction * posPointMan) : posPointMan;
@@ -168,7 +174,7 @@ public class UserSyncPosition : NetworkBehaviour
 
                 Quaternion rotationShoulders = Quaternion.FromToRotation(Vector3.right, dirLeftRight);
 
-                if (Offset)
+                if (rotationalOffset)
                 {
                     rotationShoulders.eulerAngles -= new Vector3(0,offsetCalculator.rotationalOffset.y,0);
                     myTransform.rotation = rotationShoulders;

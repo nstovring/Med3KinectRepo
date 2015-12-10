@@ -41,7 +41,12 @@ public class OffsetCalculator : NetworkBehaviour {
             PlayerPrefs.SetFloat("PositionalOffsetX", (positionalOffset.x));
             PlayerPrefs.SetFloat("PositionalOffsetY", (positionalOffset.y));
             PlayerPrefs.SetFloat("PositionalOffsetZ", (positionalOffset.z));
-            players[1].transform.GetComponent<UserSyncPosition>().Offset = true;
+            PlayerPrefs.SetFloat("RotationalOffsetX", (rotationalOffset.x));
+            PlayerPrefs.SetFloat("RotationalOffsetY", (rotationalOffset.y));
+            PlayerPrefs.SetFloat("RotationalOffsetZ", (rotationalOffset.z));
+            players[1].transform.GetComponent<UserSyncPosition>().rotationalOffset = true;
+            players[1].transform.GetComponent<UserSyncPosition>().positionalOffset = true;
+
         }
     }
 
@@ -75,7 +80,7 @@ public class OffsetCalculator : NetworkBehaviour {
         PlayerPrefs.SetFloat("RotationalOffsetX", (rotationalOffset.x));
         PlayerPrefs.SetFloat("RotationalOffsetY", (rotationalOffset.y));
         PlayerPrefs.SetFloat("RotationalOffsetZ", (rotationalOffset.z));
-        players[1].transform.GetComponent<UserSyncPosition>().Offset = true;
+        players[1].transform.GetComponent<UserSyncPosition>().rotationalOffset = true;
     }
 
 }

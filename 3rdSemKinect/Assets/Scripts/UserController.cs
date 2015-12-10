@@ -102,7 +102,7 @@ public class UserController : NetworkBehaviour
         {
             foreach (var i in users)
             {
-                i.GetComponent<UserSyncPosition>().Offset = true;
+                i.GetComponent<UserSyncPosition>().rotationalOffset = true;
             }
         }
     }
@@ -153,7 +153,6 @@ public class UserController : NetworkBehaviour
                 {
                     return;
                 }
-                Debug.Log("User exist");
 
                 KinectWrapper.NuiSkeletonData skeletonData = skeletonFrame.SkeletonData[i];
                 UserSyncPosition userSyncPosition = users[i].GetComponent<UserSyncPosition>();
@@ -171,7 +170,6 @@ public class UserController : NetworkBehaviour
                         }
                         allUsers.Add(userId);
                     }
-                    Debug.Log("Moving Cube!!");
                     userSyncPosition.MoveWithUser(skeletonPos);
                 }
                 else
@@ -184,7 +182,6 @@ public class UserController : NetworkBehaviour
                         }
                         allUsers.Remove(userId);
                     }
-                    Debug.Log("Lost Cube!!");
                     userSyncPosition.MoveWithUser(initialPosVector3);
                 }
             }
