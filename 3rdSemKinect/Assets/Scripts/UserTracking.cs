@@ -3,7 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine.Networking;
 
-public class UserTracking : MonoBehaviour {
+public class UserTracking : NetworkBehaviour {
 
     GameObject[] cubes;
     List<GameObject> players;
@@ -21,9 +21,11 @@ public class UserTracking : MonoBehaviour {
 	
 	// Update is called once per frame
 	void Update () {
+        cubes = GameObject.FindGameObjectsWithTag("Player");
+        addToPlayers(cubes);
 
-	
-	}
+
+    }
     public void addToPlayers(GameObject[] cubes)
     {
         for (int i = 0; i < cubes.Length; i++)
