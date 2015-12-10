@@ -76,8 +76,9 @@ public class UserSyncPosition : NetworkBehaviour
             else
             {
                 MoveWithUser();
-                TiltWithUser();
+                //TiltWithUser();
                 //RotateWithUser();
+                OrientWithUser();
                 CmdProvidePositionToServer(myTransform.position, myTransform.rotation.eulerAngles);
             }
         }
@@ -196,27 +197,80 @@ public class UserSyncPosition : NetworkBehaviour
             uint userId = manager.GetPlayer1ID();
 
             if (manager.IsJointTracked(userId, (int)KinectWrapper.NuiSkeletonPositionIndex.HipCenter) &&
-                manager.IsJointTracked(userId, (int)KinectWrapper.NuiSkeletonPositionIndex.ShoulderCenter))
+                manager.IsJointTracked(userId, (int)KinectWrapper.NuiSkeletonPositionIndex.ShoulderCenter)) 
             {
                 Vector3 posHipCenter = manager.GetJointPosition(userId, (int)KinectWrapper.NuiSkeletonPositionIndex.HipCenter);
                 Vector3 posShoulderCenter = manager.GetJointPosition(userId, (int)KinectWrapper.NuiSkeletonPositionIndex.ShoulderCenter);
 
+
                 posHipCenter.z = -posHipCenter.z;
                 posShoulderCenter.z = -posShoulderCenter.z;
 
-                Vector3 directionUpDown = posHipCenter - posShoulderCenter;
+                Vector3 directionUpDown = posShoulderCenter-posHipCenter;
                 directionUpDown -= Vector3.Project(directionUpDown, Vector3.right);
 
-                Quaternion rotationTorso = Quaternion.FromToRotation(Vector3.up, directionUpDown);
+                Quaternion torsoTilt = Quaternion.FromToRotation(Vector3.up, directionUpDown);
+
+                torsoTilt.x = -torsoTilt.x;
 
                 if (rotationalOffset)
                 {
-                    rotationTorso.eulerAngles -= new Vector3(offsetCalculator.rotationalOffset.x, offsetCalculator.rotationalOffset.y, 0);
-                    myTransform.rotation = rotationTorso;
+                    torsoTilt.eulerAngles -= new Vector3(offsetCalculator.rotationalOffset.x, offsetCalculator.rotationalOffset.y, 0);
+                    myTransform.rotation = torsoTilt;
                 }
                 else
                 {
-                    myTransform.rotation = rotationTorso;
+                    myTransform.rotation = torsoTilt;
+                }
+            }
+        }
+    }
+
+    [Client]
+    private void OrientWithUser()
+    {
+        if (manager.IsUserDetected())
+        {
+            uint userId = manager.GetPlayer1ID();
+
+            if (manager.IsJointTracked(userId, (int)KinectWrapper.NuiSkeletonPositionIndex.HipCenter) &&
+                manager.IsJointTracked(userId, (int)KinectWrapper.NuiSkeletonPositionIndex.ShoulderCenter) &&
+                manager.IsJointTracked(userId, (int)KinectWrapper.NuiSkeletonPositionIndex.ShoulderLeft) &&
+                manager.IsJointTracked(userId, (int)KinectWrapper.NuiSkeletonPositionIndex.ShoulderRight))
+            {
+                Vector3 posHipCenter = manager.GetJointPosition(userId, (int)KinectWrapper.NuiSkeletonPositionIndex.HipCenter);
+                Vector3 posShoulderCenter = manager.GetJointPosition(userId, (int)KinectWrapper.NuiSkeletonPositionIndex.ShoulderCenter);
+
+                Vector3 posLeftShoulder = manager.GetJointPosition(userId, (int)KinectWrapper.NuiSkeletonPositionIndex.ShoulderLeft);
+                Vector3 posRightShoulder = manager.GetJointPosition(userId, (int)KinectWrapper.NuiSkeletonPositionIndex.ShoulderRight);
+
+                posLeftShoulder.z = -posLeftShoulder.z;
+                posRightShoulder.z = -posRightShoulder.z;
+
+                posHipCenter.z = -posHipCenter.z;
+                posShoulderCenter.z = -posShoulderCenter.z;
+
+                Vector3 dirLeftRight = posRightShoulder - posLeftShoulder;
+                dirLeftRight -= Vector3.Project(dirLeftRight, Vector3.up);
+
+                Vector3 directionUpDown = posShoulderCenter - posHipCenter;
+                directionUpDown -= Vector3.Project(directionUpDown, Vector3.right);
+
+                Quaternion torsoTilt = Quaternion.FromToRotation(Vector3.up, directionUpDown);
+                Quaternion rotationShoulders = Quaternion.FromToRotation(Vector3.right, dirLeftRight);
+
+                torsoTilt.x = -torsoTilt.x;
+
+                Quaternion userOrientation = torsoTilt * rotationShoulders;
+
+                if (rotationalOffset)
+                {
+                    userOrientation.eulerAngles -= new Vector3(offsetCalculator.rotationalOffset.x, offsetCalculator.rotationalOffset.y, 0);
+                    myTransform.rotation = userOrientation;
+                }
+                else
+                {
+                    myTransform.rotation = userOrientation;
                 }
             }
         }
