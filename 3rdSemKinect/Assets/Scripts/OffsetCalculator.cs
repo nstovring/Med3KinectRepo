@@ -11,6 +11,10 @@ public class OffsetCalculator : NetworkBehaviour {
 
     private GameObject[] players;
     private float player1AngleFromKinect;
+    public Vector3[] oldCords;
+    public Vector3[] vel;
+    public float[] angles;
+
     [SyncVar] public Vector3 positionalOffset;
     [SyncVar] public Vector3 rotationalOffset;
 
@@ -82,5 +86,18 @@ public class OffsetCalculator : NetworkBehaviour {
         PlayerPrefs.SetFloat("RotationalOffsetZ", (rotationalOffset.z));
         players[1].transform.GetComponent<UserSyncPosition>().rotationalOffset = true;
     }
-
+    private void MovementDiff()
+    {
+        players = GameObject.FindGameObjectsWithTag("Player");
+        for (int i = 0; i < players.Length; i++)
+        {
+            vel[i] = oldCords[i] - players[i].transform.position;
+            oldCords[i] = players[i].transform.position;
+        }
+        for (int i = 1; i < vel.Length; i++)
+        {
+            angles[i - 1] = Vector3.Angle(vel[0], vel[i]);
+            Debug.Log(angles[i - 1]);
+        }
+    }
 }
