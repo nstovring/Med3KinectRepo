@@ -35,6 +35,13 @@ public class Logger : MonoBehaviour
         }
     }
 
+    /// <summary>
+    /// Log Data
+    /// </summary>
+    /// <param name="tracking"></param>
+    /// <param name="position"></param>
+    /// <param name="id"></param>
+    /// <param name="time"></param>
     static public void LogData(string tracking, Vector3 position, uint id, float time)
     {
         using (StreamWriter file =
@@ -43,5 +50,4 @@ public class Logger : MonoBehaviour
             file.WriteLine(tracking + "\t" + position + "\t UserID:" + "\t" + id + "\t" + "Time:" + "\t" + time);
         }
     }
-
 }
