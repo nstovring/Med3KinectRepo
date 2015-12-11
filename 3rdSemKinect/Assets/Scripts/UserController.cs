@@ -53,6 +53,7 @@ public class UserController : NetworkBehaviour
             userSyncPosition.Initialize((GetComponent<NetworkIdentity>().netId.Value - 1)+ " " + i, rndColor);
             NetworkServer.SpawnWithClientAuthority(users[i],connectionToClient);
             userSyncPosition.Cmd_ChangeIdentity(rndColor, ("SubUser " + (GetComponent<NetworkIdentity>().netId.Value - 1) + " " + i));
+            users[i].AddComponent<NetworkTransform>();
         }
         Rpc_SpawnObjects(users);
     }

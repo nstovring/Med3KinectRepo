@@ -2,6 +2,7 @@
 using System.Collections;
 using UnityEngine.Networking;
 
+//[RequireComponent(typeof(NetworkTransform))]
 public class UserSyncPosition : NetworkBehaviour
 {
 
@@ -79,7 +80,7 @@ public class UserSyncPosition : NetworkBehaviour
                 //TiltWithUser();
                 //RotateWithUser();
                 OrientWithUser();
-                CmdProvidePositionToServer(myTransform.position, myTransform.rotation.eulerAngles);
+                //CmdProvidePositionToServer(myTransform.position, myTransform.rotation.eulerAngles);
             }
         }
     }
@@ -117,8 +118,10 @@ public class UserSyncPosition : NetworkBehaviour
         if (rotationalOffset)
         {
             Quaternion directionY = Quaternion.AngleAxis(offsetCalculator.rotationalOffset.y, Vector3.up);
-            Quaternion directionX = Quaternion.AngleAxis(offsetCalculator.rotationalOffset.x, Vector3.right);
-            Quaternion direction = directionX*directionY;
+            //Quaternion directionX = Quaternion.AngleAxis(offsetCalculator.rotationalOffset.x, Vector3.right);
+            //Quaternion direction = directionX*directionY;
+            Quaternion direction = directionY;
+
             posPointMan = (direction * posPointMan) != Vector3.zero ? (direction * posPointMan) : posPointMan;
             transform.position = posPointMan;
         }
@@ -144,18 +147,20 @@ public class UserSyncPosition : NetworkBehaviour
         if (rotationalOffset)
         {
             Quaternion directionY = Quaternion.AngleAxis(offsetCalculator.rotationalOffset.y, Vector3.up);
-            Quaternion directionX = Quaternion.AngleAxis(offsetCalculator.rotationalOffset.x, Vector3.right);
-            Quaternion direction = directionX * directionY;
+            //Quaternion directionX = Quaternion.AngleAxis(offsetCalculator.rotationalOffset.x, Vector3.left);
+            //Quaternion direction = directionX * directionY;
+            Quaternion direction =  directionY;
+
             posPointMan = (direction * posPointMan) != Vector3.zero ? (direction * posPointMan) : posPointMan;
             transform.position = posPointMan;
             posPointMan += offsetCalculator.positionalOffset;
             transform.position = posPointMan;
-            CmdProvidePositionToServer(transform.position, Vector3.zero);
+            //CmdProvidePositionToServer(transform.position, Vector3.zero);
         }
         else
         {
             transform.position = posPointMan;
-            CmdProvidePositionToServer(transform.position, Vector3.zero);
+            //CmdProvidePositionToServer(transform.position, Vector3.zero);
         }
     }
 
