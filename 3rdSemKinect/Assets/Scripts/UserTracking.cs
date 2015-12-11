@@ -5,13 +5,14 @@ using UnityEngine.Networking;
 
 public class UserTracking : NetworkBehaviour {
 
-    GameObject[] cubes;
-    List<GameObject> players;
+    public GameObject[] cubes;
+    public List<GameObject> players;
     bool Calibrated;
     bool Check;
     bool isFirst;
 
-    List<List<GameObject>> calibratedPlayers;
+    public List<List<GameObject>> calibratedPlayers;
+    public List<GameObject> viewFirstIndex;
 	// Use this for initialization
 	void Start () {
         Calibrated = false;
@@ -28,11 +29,8 @@ public class UserTracking : NetworkBehaviour {
 	void Update () {
         if (Check && isServer)
         {
-            cubes = GameObject.FindGameObjectsWithTag("Player");
-            addToPlayers(cubes);
-            checkIfPlayerIsTracked();
-            checkIfUsersAreTracked();
-            checkForUsers();
+            check();
+            viewFirstIndex = calibratedPlayers[0];
         }
 
 
@@ -42,6 +40,7 @@ public class UserTracking : NetworkBehaviour {
     {
         if (isServer && isFirst)
         {
+            //Debug.Log("1 Hello");
             cubes = GameObject.FindGameObjectsWithTag("Player");
             addToPlayers(cubes);
             checkForUsers();
@@ -49,16 +48,23 @@ public class UserTracking : NetworkBehaviour {
         }
         else if (isServer && !isFirst)
         {
+            //Debug.Log("2 Hello");
             cubes = GameObject.FindGameObjectsWithTag("Player");
             addToPlayers(cubes);
             checkIfPlayerIsTracked();
-            checkIfUsersAreTracked();
-            checkForUsers();
-            Check = true;
+            if(cubes != null)
+            {
+                checkIfUsersAreTracked();
+                checkForUsers();
+                Check = true;
+
+            }
+
         }
     }
     public void addToPlayers(GameObject[] cubes)
     {
+        //Debug.Log("3 Hello");
         for (int i = 0; i < cubes.Length; i++)
         {
             players.Add(cubes[i]);
@@ -77,6 +83,7 @@ public class UserTracking : NetworkBehaviour {
                 {
                     if(players[i].transform.position.magnitude - players[j].transform.position.magnitude < 0.2)
                     {
+                        
                         List<GameObject> player = new List<GameObject>() {players[i],players[j] };
                         calibratedPlayers.Add(player);
                         players.Remove(players[i]);
@@ -86,7 +93,8 @@ public class UserTracking : NetworkBehaviour {
                 }
                 else if(players.Count == 1)
                 {
-                    List<GameObject> player = new List<GameObject>() { players[i], players[j] };
+                    //Debug.Log("adding a single one");
+                    List<GameObject> player = new List<GameObject>() { players[i]};
                     calibratedPlayers.Add(player);
                     players.Remove(players[i]);
                     break;
@@ -108,6 +116,7 @@ public class UserTracking : NetworkBehaviour {
                 {
                     if(players[i] == calibratedPlayers[j][n])
                     {
+                        //Debug.Log("Removing player");
                         players.Remove(players[i]);
                         tracked = true;
                         break;
@@ -131,16 +140,23 @@ public class UserTracking : NetworkBehaviour {
     [Server]
     public void checkIfPlayerIsTracked()
     {
-        for (int j = 0; j < calibratedPlayers.Count; j++)
+
+        for (int i = 0; i < calibratedPlayers.Count; i++)
         {
-            for (int i = 0; i < calibratedPlayers[i].Count; i++)
+            if (calibratedPlayers[i] != null)
             {
-                if (calibratedPlayers[i][j].transform.position.x > 20)
+                //Debug.Log("4 Hello");
+                for (int j = 0; j < calibratedPlayers[i].Count; j++)
                 {
-                    calibratedPlayers[i].Remove(calibratedPlayers[i][j]);
-                    if(calibratedPlayers[i].Count == 0)
+                    if (calibratedPlayers[i][j] != null && calibratedPlayers[i][j].transform.position.x > 20)
                     {
-                        calibratedPlayers.Remove(calibratedPlayers[i]);
+                        //Debug.Log("5 Hello");
+                        calibratedPlayers[i].Remove(calibratedPlayers[i][j]);
+                        if (calibratedPlayers[i].Count == 0)
+                        {
+                            //Debug.Log("Removing Player");
+                            calibratedPlayers.Remove(calibratedPlayers[i]);
+                        }
                     }
                 }
             }
