@@ -86,7 +86,6 @@ public class UserTracking : NetworkBehaviour {
                 {
                     if(players[i].transform.position.magnitude - players[j].transform.position.magnitude < 0.2)
                     {
-                        
                         List<GameObject> player = new List<GameObject>() {players[i],players[j] };
                         calibratedPlayers.Add(player);
                         players.Remove(players[i]);

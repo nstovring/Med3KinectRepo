@@ -38,30 +38,6 @@ public class UserSyncPosition : NetworkBehaviour
             Debug.Log("Loggin stuff!!" + transform.position);
             LogPosition();
         }
-        manager = KinectManager.Instance;
-        //if (manager == null)
-        //{
-        //    return;
-        //}
-        //if (isLocalPlayer)
-        //{
-        //    KinectWrapper.NuiSkeletonData[] skeletonData = manager.skeletonFrame.SkeletonData;
-        //    if (skeletonData[manager.player1Index].eTrackingState !=
-        //        KinectWrapper.NuiSkeletonTrackingState.SkeletonTracked && !isTrackingLost && isLocalPlayer)
-        //    {
-        //        Debug.Log("Tracking lost");
-        //        isTrackingLost = true;
-        //        transform.position = new Vector3(50, 50, 50);
-        //        Logger.LogData("Tracking Lost at this position", transform.position, transform.rotation.eulerAngles,
-        //            userId, "No time Logged " + (GetComponent<NetworkIdentity>().netId.Value - 1));
-        //        CmdProvidePositionToServer(transform.position, Quaternion.identity.eulerAngles);
-        //    }
-        //    else if (skeletonData[manager.player1Index].eTrackingState ==
-        //             KinectWrapper.NuiSkeletonTrackingState.SkeletonTracked)
-        //    {
-        //        isTrackingLost = false;
-        //    }
-        //}
     }
 
     [ClientCallback]
@@ -70,7 +46,7 @@ public class UserSyncPosition : NetworkBehaviour
         {
             TransmitPosition();
         }
-        else
+        /*else if(isLocalPlayer)
         {
             timePassed += Time.deltaTime;
             if (timePassed >= syncStep)
@@ -78,7 +54,7 @@ public class UserSyncPosition : NetworkBehaviour
                 CmdProvidePositionToServer(myTransform.position, Vector3.zero);
                 timePassed = 0;
             }
-        }
+        }*/
         LerpPosition();
     }
 
@@ -233,9 +209,9 @@ public class UserSyncPosition : NetworkBehaviour
         }
     }
 
-    public uint userId;
+    public string userId;
 
-    public void MoveWithUser(Vector3 posPointMan, uint userId)
+    public void MoveWithUser(Vector3 posPointMan, string userId)
     {
         offsetCalculator = OffsetCalculator.offsetCalculator;
         posPointMan.z = !MirroredMovement ? -posPointMan.z : posPointMan.z;

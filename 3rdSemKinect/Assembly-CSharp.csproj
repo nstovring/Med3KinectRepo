@@ -76,6 +76,7 @@
      <Compile Include="Assets\Scripts\UserController.cs" />
      <Compile Include="Assets\Scripts\UserSyncPosition.cs" />
      <Compile Include="Assets\Scripts\UserTracking.cs" />
+     <None Include="Assets\TestingLogs\LogTracking.txt" />
  <Reference Include="UnityEngine.UI">
  <HintPath>C:/Program Files/Unity/Editor/Data/UnityExtensions/Unity/GUISystem/UnityEngine.UI.dll</HintPath>
  </Reference>

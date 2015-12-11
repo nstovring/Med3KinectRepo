@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Runtime.InteropServices;
 using System.IO;
 using System.Text;
+using UnityEditor;
 using UnityEngine.Networking;
 using UnityEngine.UI;
 
@@ -18,17 +19,18 @@ public class UserController : NetworkBehaviour
 
     readonly Vector3 initialPosVector3 = new Vector3(50, 0, 0);
 
-    public List<uint> allUsers;
+    public List<string> allUsers;
     private OffsetCalculator offsetCalculator;
 
-
+    private float timeStep = 10.0f;
+    private float timeReset;
     public Button[] buttons = new Button[4];
     // Use this for initialization
 
     public override void OnStartClient()
     {
         base.OnStartClient();
-        allUsers = new List<uint>();
+        allUsers = new List<string>();
         buttons[0] = GameObject.Find("Apply Offset").GetComponent<Button>();
         buttons[1] = GameObject.Find("Activate Logging").GetComponent<Button>();
         buttons[2] = GameObject.Find("Deactivate Logging").GetComponent<Button>();
@@ -117,6 +119,7 @@ public class UserController : NetworkBehaviour
     {
         Logging = false;
     }
+    public float[] waitTimers = new float[6];
 
     [ClientCallback]
     void Update()
@@ -126,25 +129,32 @@ public class UserController : NetworkBehaviour
         if (Logging)
         {
             timePassed += Time.deltaTime;
+            timeReset = timePassed% timeStep;
         }
 
+        for(int i = 0 ; i < waitTimers.Length; i++)
+        {
+            if (waitTimers[i] >= 0)
+            {
+                waitTimers[i] -= Time.deltaTime;
+            }
+        }
 
         if (manager != null && manager.KinectInitialized && isLocalPlayer)
         {
             skeletonFrame = manager.skeletonFrame;
-
+            int fuckI = 0;
             for (int i = 0; i < skeletonFrame.SkeletonData.Length; i++)
             {
                 if (users[i] == null)
                 {
                     return;
                 }
-
                 KinectWrapper.NuiSkeletonData skeletonData = skeletonFrame.SkeletonData[i];
                 UserSyncPosition userSyncPosition = users[i].GetComponent<UserSyncPosition>();
                 Vector3 skeletonPos = manager.kinectToWorld.MultiplyPoint3x4(skeletonData.Position);
 
-                uint userId = skeletonData.dwTrackingID;
+                string userId = userSyncPosition.transform.name;
 
                 if (skeletonData.eTrackingState == KinectWrapper.NuiSkeletonTrackingState.SkeletonTracked)
                 {
@@ -156,24 +166,40 @@ public class UserController : NetworkBehaviour
                         }
                         allUsers.Add(userId);
                     }
+                    if (timeReset > 0 && timeReset < 1 && timeBool && Logging)
+                    {
+                        Debug.Log("Continued tracking");
+                        Logger.LogData("Tracking Continued: ", skeletonPos, userId, timePassed);
+                        timeBool = false;
+                    }
+                    if (timeReset > 1)
+                    {
+                        timeBool = true;
+                    }
+                    waitTimers[i] = 2;
                     userSyncPosition.MoveWithUser(skeletonPos, userId);
                 }
                 else
                 {
-                    if (allUsers.Contains(userId))
+                    if (Logging && allUsers.Contains(userId))
                     {
-                        if (Logging)
+                        if (waitTimers[i] <= 0)
                         {
                             Logger.LogData("Tracking Lost: ", skeletonPos, userId, timePassed);
+                            allUsers.Remove(userId);
+                            waitTimers[i] = 0;
                         }
-                        allUsers.Remove(userId);
                     }
-                    userSyncPosition.MoveWithUser(initialPosVector3);
+                    if (!allUsers.Contains(userId))
+                    {
+                        userSyncPosition.MoveWithUser(initialPosVector3);
+                    }
                 }
             }
         }
     }
 
+    private bool timeBool = true;
 
 
     public bool MirroredMovement { get; set; }
