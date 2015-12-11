@@ -1,6 +1,7 @@
 ﻿using UnityEngine;
 using System.Collections;
 using UnityEngine.Networking;
+using System;
 
 //[RequireComponent(typeof(NetworkTransform))]
 public class UserSyncPosition : NetworkBehaviour
@@ -31,6 +32,12 @@ public class UserSyncPosition : NetworkBehaviour
     // Update is called once per frame
     [ClientCallback]
     void FixedUpdate () {
+
+        if (Input.GetKeyUp(KeyCode.L) && isLocalPlayer)
+        {
+            LogPosition();
+        }
+
         if (isCalibrationUser)
         {
             TransmitPosition();
@@ -100,7 +107,7 @@ public class UserSyncPosition : NetworkBehaviour
     {
         base.OnStartLocalPlayer();
         string objectName = "User " + (GetComponent<NetworkIdentity>().netId.Value -1);
-        userColor = new Color(Random.value, Random.value, Random.value);
+        userColor = new Color(UnityEngine.Random.value, UnityEngine.Random.value, UnityEngine.Random.value);
         transform.GetComponent<MeshRenderer>().material.color = userColor;
         transform.name = objectName;
         Cmd_ChangeIdentity(userColor, objectName);
@@ -148,6 +155,11 @@ public class UserSyncPosition : NetworkBehaviour
         }
     }
 
+    void LogPosition()
+    {
+        Logger.LogData("Logging Position", transform.position, transform.rotation.eulerAngles, userId, "No time Logged");
+    }
+
     [Client]
     public void MoveWithUser(Vector3 posPointMan)
     {
@@ -170,6 +182,52 @@ public class UserSyncPosition : NetworkBehaviour
                 Quaternion direction = directionX * directionY;
 
                 Quaternion directionQuaternion = Quaternion.Euler(new Vector3(directionX.x,directionY.y)); 
+                //Quaternion direction = directionY;
+
+                posPointMan = (direction * posPointMan) != Vector3.zero ? (direction * posPointMan) : posPointMan;
+                transform.position = posPointMan;
+                posPointMan += offsetCalculator.positionalOffset;
+                transform.position = posPointMan;
+            }
+        }
+        else
+        {
+            timePassed += Time.deltaTime;
+            if (timePassed >= syncStep)
+            {
+                CmdProvidePositionToServer(myTransform.position, myTransform.rotation.eulerAngles);
+                timePassed = 0;
+            }
+            else
+            {
+                transform.position = posPointMan;
+            }
+        }
+    }
+
+    public uint userId;
+
+    public void MoveWithUser(Vector3 posPointMan, uint userId)
+    {
+        offsetCalculator = OffsetCalculator.offsetCalculator;
+        posPointMan.z = !MirroredMovement ? -posPointMan.z : posPointMan.z;
+        posPointMan.x *= 1;
+        this.userId = userId;
+        if (rotationalOffset)
+        {
+            timePassed += Time.deltaTime;
+            if (timePassed >= syncStep)
+            {
+                CmdProvidePositionToServer(myTransform.position, myTransform.rotation.eulerAngles);
+                timePassed = 0;
+            }
+            else
+            {
+                Quaternion directionY = Quaternion.AngleAxis(offsetCalculator.rotationalOffset.y, Vector3.up);
+                Quaternion directionX = Quaternion.AngleAxis(offsetCalculator.rotationalOffset.x, Vector3.left);
+                Quaternion direction = directionX * directionY;
+
+                Quaternion directionQuaternion = Quaternion.Euler(new Vector3(directionX.x, directionY.y));
                 //Quaternion direction = directionY;
 
                 posPointMan = (direction * posPointMan) != Vector3.zero ? (direction * posPointMan) : posPointMan;

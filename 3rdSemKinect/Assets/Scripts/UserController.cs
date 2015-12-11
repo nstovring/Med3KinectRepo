@@ -156,7 +156,7 @@ public class UserController : NetworkBehaviour
                         }
                         allUsers.Add(userId);
                     }
-                    userSyncPosition.MoveWithUser(skeletonPos);
+                    userSyncPosition.MoveWithUser(skeletonPos, userId);
                 }
                 else
                 {

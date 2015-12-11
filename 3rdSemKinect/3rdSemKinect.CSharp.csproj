@@ -100,5 +100,8 @@
     <Compile Include="Assets\Scripts\UserSyncPosition.cs" />
     <Compile Include="Assets\Scripts\UserTracking.cs" />
   </ItemGroup>
+  <ItemGroup>
+    <None Include="Assets\TestingLogs\LogTracking.txt" />
+  </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath)\SyntaxTree\UnityVS\2015\UnityVS.CSharp.targets" />
 </Project>
