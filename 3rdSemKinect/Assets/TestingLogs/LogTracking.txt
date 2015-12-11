@@ -1,6 +1,0 @@
-Tracking Lost at this position	(50.0, 50.0, 50.0)	 Orientation:	(36.3, 179.1, 179.5)	 UserID:	0	Time:	No time Logged1
-Tracking Lost at this position	(50.0, 50.0, 50.0)	 Orientation:	(10.4, 26.4, 5.1)	 UserID:	0	Time:	No time Logged1
-Tracking Lost at this position	(50.0, 50.0, 50.0)	 Orientation:	(10.2, 26.6, 5.1)	 UserID:	0	Time:	No time Logged1
-Logging Position	(-0.6, 0.9, 2.7)	 Orientation:	(9.3, 27.5, 4.8)	 UserID:	0	Time:	No time Logged
-Tracking Lost at this position	(50.0, 50.0, 50.0)	 Orientation:	(349.7, 28.4, 354.5)	 UserID:	0	Time:	No time Logged1
-Logging Position	(-1.1, 0.7, 2.0)	 Orientation:	(349.7, 28.4, 354.5)	 UserID:	0	Time:	No time Logged

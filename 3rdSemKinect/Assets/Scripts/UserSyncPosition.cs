@@ -39,23 +39,29 @@ public class UserSyncPosition : NetworkBehaviour
             LogPosition();
         }
         manager = KinectManager.Instance;
-        if (manager == null)
-        {
-            return;
-        }
-        KinectWrapper.NuiSkeletonData[] skeletonData = manager.skeletonFrame.SkeletonData;
-        if (skeletonData[manager.player1Index].eTrackingState != KinectWrapper.NuiSkeletonTrackingState.SkeletonTracked  && !isTrackingLost)
-        {
-            Debug.Log("Tracking lost");
-            isTrackingLost = true;
-            transform.position = new Vector3(50,50,50);
-            Logger.LogData("Tracking Lost at this position", transform.position, transform.rotation.eulerAngles, userId, "No time Logged" + (GetComponent<NetworkIdentity>().netId.Value - 1));
-            CmdProvidePositionToServer(transform.position, Quaternion.identity.eulerAngles);
-        }else if (skeletonData[manager.player1Index].eTrackingState ==
-                  KinectWrapper.NuiSkeletonTrackingState.SkeletonTracked)
-        {
-            isTrackingLost = false;
-        }
+        //if (manager == null)
+        //{
+        //    return;
+        //}
+        //if (isLocalPlayer)
+        //{
+        //    KinectWrapper.NuiSkeletonData[] skeletonData = manager.skeletonFrame.SkeletonData;
+        //    if (skeletonData[manager.player1Index].eTrackingState !=
+        //        KinectWrapper.NuiSkeletonTrackingState.SkeletonTracked && !isTrackingLost && isLocalPlayer)
+        //    {
+        //        Debug.Log("Tracking lost");
+        //        isTrackingLost = true;
+        //        transform.position = new Vector3(50, 50, 50);
+        //        Logger.LogData("Tracking Lost at this position", transform.position, transform.rotation.eulerAngles,
+        //            userId, "No time Logged " + (GetComponent<NetworkIdentity>().netId.Value - 1));
+        //        CmdProvidePositionToServer(transform.position, Quaternion.identity.eulerAngles);
+        //    }
+        //    else if (skeletonData[manager.player1Index].eTrackingState ==
+        //             KinectWrapper.NuiSkeletonTrackingState.SkeletonTracked)
+        //    {
+        //        isTrackingLost = false;
+        //    }
+        //}
     }
 
     [ClientCallback]
@@ -179,7 +185,7 @@ public class UserSyncPosition : NetworkBehaviour
 
     void LogPosition()
     {
-        Logger.LogData("Logging Position", transform.position, transform.rotation.eulerAngles, userId, "No time Logged");
+        Logger.LogData("Logging Position", transform.position, transform.rotation.eulerAngles, userId, "No time Logged " + (GetComponent<NetworkIdentity>().netId.Value - 1));
     }
 
     [Client]

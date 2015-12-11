@@ -59,25 +59,16 @@ void draw()
 }
 
 void DisplayPoints(){
-context.update();
-
+  context.update();
   background(0,0,0);
-
   translate(width/2, height/2, 0);
-  rotateX(rotX);
-  rotateY(rotY);
+  rotateX(rotX); rotateY(rotY);
   scale(zoomF);
-
-  int[]   depthMap = context.depthMap();
-  int     index;
+  int[]   depthMap = context.depthMap();int index;
   PVector realWorldPoint;
- 
   translate(0,0,-1000);  // set the rotation center of the scene 1000 infront of the camera
-
   stroke(255);
-
   PVector[] realWorldMap = context.depthMapRealWorld();
-  
   // draw pointcloud
   beginShape(POINTS);
   for(int y=0;y < context.depthHeight();y+=steps)
@@ -96,7 +87,6 @@ context.update();
   } 
   endShape();
   counter=0;
-  // draw the kinect cam
   context.drawCamFrustum();
 }
 
