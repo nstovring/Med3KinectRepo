@@ -31,6 +31,8 @@ public class UserTracking : NetworkBehaviour {
         {
             check();
             viewFirstIndex = calibratedPlayers[0];
+            //Debug.Log(calibratedPlayers.Count);
+            //Debug.Log(calibratedPlayers[0].Count);
         }
 
 
@@ -38,6 +40,7 @@ public class UserTracking : NetworkBehaviour {
     }
     public void check()
     {
+        //Debug.Log("Hello");
         if (isServer && isFirst)
         {
             //Debug.Log("1 Hello");
@@ -79,7 +82,7 @@ public class UserTracking : NetworkBehaviour {
         while(players.Count >= 1){
             for (int j = 0; j < players.Count; j++)
             {
-                if(i != j)
+                if(players[i]!= players[j])
                 {
                     if(players[i].transform.position.magnitude - players[j].transform.position.magnitude < 0.2)
                     {
@@ -87,7 +90,7 @@ public class UserTracking : NetworkBehaviour {
                         List<GameObject> player = new List<GameObject>() {players[i],players[j] };
                         calibratedPlayers.Add(player);
                         players.Remove(players[i]);
-                        players.Remove(players[j]);
+                        players.Remove(players[j-1]);
                         break;
                     }
                 }
@@ -116,12 +119,13 @@ public class UserTracking : NetworkBehaviour {
                 {
                     if(players[i] == calibratedPlayers[j][n])
                     {
-                        //Debug.Log("Removing player");
+                        Debug.Log("Removing player" + players[i].name);
                         players.Remove(players[i]);
                         tracked = true;
                         break;
+
                     }
-                    else if( players[i].transform.position.magnitude - calibratedPlayers[j][n].transform.position.magnitude < 0.2)
+                    else if( players[i].transform.position.magnitude - calibratedPlayers[j][n].transform.position.magnitude < 0.2 && checkIfIsInList(players[i], j))
                     {
                         calibratedPlayers[j].Add(players[i]);
                         players.Remove(players[i]);
@@ -137,6 +141,18 @@ public class UserTracking : NetworkBehaviour {
             }
         }
     }
+    private bool checkIfIsInList(GameObject player, int num)
+    {
+        for (int j = 0; j < calibratedPlayers[num].Count; j++)
+        {
+                if(player == calibratedPlayers[num][j])
+                {
+                    return false;
+                }
+        }
+        return true;
+    }
+
     [Server]
     public void checkIfPlayerIsTracked()
     {
@@ -148,7 +164,7 @@ public class UserTracking : NetworkBehaviour {
                 //Debug.Log("4 Hello");
                 for (int j = 0; j < calibratedPlayers[i].Count; j++)
                 {
-                    if (calibratedPlayers[i][j] != null && calibratedPlayers[i][j].transform.position.x > 20)
+                    if (calibratedPlayers[i][j] != null && calibratedPlayers[i][j].transform.position.x > 5)
                     {
                         //Debug.Log("5 Hello");
                         calibratedPlayers[i].Remove(calibratedPlayers[i][j]);
