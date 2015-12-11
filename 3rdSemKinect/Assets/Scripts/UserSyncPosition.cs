@@ -157,21 +157,37 @@ public class UserSyncPosition : NetworkBehaviour
 
         if (rotationalOffset)
         {
-            Quaternion directionY = Quaternion.AngleAxis(offsetCalculator.rotationalOffset.y, Vector3.up);
-            //Quaternion directionX = Quaternion.AngleAxis(offsetCalculator.rotationalOffset.x, Vector3.left);
-            //Quaternion direction = directionX * directionY;
-            Quaternion direction =  directionY;
+            timePassed += Time.deltaTime;
+            if (timePassed >= syncStep)
+            {
+                CmdProvidePositionToServer(myTransform.position, myTransform.rotation.eulerAngles);
+                timePassed = 0;
+            }
+            else
+            {
+                Quaternion directionY = Quaternion.AngleAxis(offsetCalculator.rotationalOffset.y, Vector3.up);
+                //Quaternion directionX = Quaternion.AngleAxis(offsetCalculator.rotationalOffset.x, Vector3.left);
+                //Quaternion direction = directionX * directionY;
+                Quaternion direction = directionY;
 
-            posPointMan = (direction * posPointMan) != Vector3.zero ? (direction * posPointMan) : posPointMan;
-            transform.position = posPointMan;
-            posPointMan += offsetCalculator.positionalOffset;
-            transform.position = posPointMan;
-            CmdProvidePositionToServer(myTransform.position, myTransform.rotation.eulerAngles);
+                posPointMan = (direction * posPointMan) != Vector3.zero ? (direction * posPointMan) : posPointMan;
+                transform.position = posPointMan;
+                posPointMan += offsetCalculator.positionalOffset;
+                transform.position = posPointMan;
+            }
         }
         else
         {
-            transform.position = posPointMan;
-            CmdProvidePositionToServer(myTransform.position, myTransform.rotation.eulerAngles);
+            timePassed += Time.deltaTime;
+            if (timePassed >= syncStep)
+            {
+                CmdProvidePositionToServer(myTransform.position, myTransform.rotation.eulerAngles);
+                timePassed = 0;
+            }
+            else
+            {
+                transform.position = posPointMan;
+            }
         }
     }
 
