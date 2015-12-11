@@ -147,7 +147,7 @@ public class KinectManager : MonoBehaviour
 	// Skeleton related structures
 	public KinectWrapper.NuiSkeletonFrame skeletonFrame;
 	private KinectWrapper.NuiTransformSmoothParameters smoothParameters;
-	private int player1Index, player2Index;
+	public int player1Index, player2Index;
 	
 	// Skeleton tracking states, positions and joints' orientations
 	private Vector3 player1Pos, player2Pos;
