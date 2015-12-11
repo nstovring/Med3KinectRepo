@@ -119,6 +119,7 @@ public class UserController : NetworkBehaviour
     {
         Logging = false;
     }
+    public float[] waitTimers = new float[6];
 
     [ClientCallback]
     void Update()
@@ -131,11 +132,18 @@ public class UserController : NetworkBehaviour
             timeReset = timePassed% timeStep;
         }
 
+        for(int i = 0 ; i < waitTimers.Length; i++)
+        {
+            if (waitTimers[i] >= 0)
+            {
+                waitTimers[i] -= Time.deltaTime;
+            }
+        }
 
         if (manager != null && manager.KinectInitialized && isLocalPlayer)
         {
             skeletonFrame = manager.skeletonFrame;
-
+            int fuckI = 0;
             for (int i = 0; i < skeletonFrame.SkeletonData.Length; i++)
             {
                 if (users[i] == null)
@@ -168,16 +176,25 @@ public class UserController : NetworkBehaviour
                     {
                         timeBool = true;
                     }
+                    waitTimers[i] = 2;
                     userSyncPosition.MoveWithUser(skeletonPos, userId);
                 }
                 else
                 {
+                    //waitTimers[i] -= 0.1f;
                     if (Logging && allUsers.Contains(userId))
                     {
-                        Logger.LogData("Tracking Lost: ", skeletonPos, userId, timePassed);
-                        allUsers.Remove(userId);
+                        if (waitTimers[i] <= 0)
+                        {
+                            Logger.LogData("Tracking Lost: ", skeletonPos, userId, timePassed);
+                            allUsers.Remove(userId);
+                            waitTimers[i] = 0;
+                        }
                     }
-                    userSyncPosition.MoveWithUser(initialPosVector3);
+                    if (!allUsers.Contains(userId))
+                    {
+                        userSyncPosition.MoveWithUser(initialPosVector3);
+                    }
                 }
             }
         }

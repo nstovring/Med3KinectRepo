@@ -52,8 +52,8 @@ public class Logger : MonoBehaviour
         using (StreamWriter file =
                new StreamWriter(@"C:\Users\nstovring\Documents\GitHub\Med3KinectRepo\3rdSemKinect\Assets\TestingLogs\LogTracking.txt", true))
         {
-            Debug.Log(tracking + "\t" + position + "\t UserID:" + "\t" + id + "\t" + "Time:" + "\t" + time);
-            file.WriteLine(tracking + "\t" + position + "\t UserID:" + "\t" + id + "\t" + "Time:" + "\t" + time);
+           // Debug.Log(tracking + "\t" + position.x +"\t"+ position.z + "\t UserID:" + "\t" + id + "\t" + "Time:" + "\t" + time);
+            file.WriteLine(tracking + "\t" + position.x + "\t" + position.z + "\t UserID:" + "\t" + id + "\t" + "Time:" + "\t" + time);
         }
     }
 }
