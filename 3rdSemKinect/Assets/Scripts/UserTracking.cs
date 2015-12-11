@@ -8,6 +8,8 @@ public class UserTracking : NetworkBehaviour {
     GameObject[] cubes;
     List<GameObject> players;
     bool Calibrated;
+    bool Check;
+    bool isFirst;
 
     List<List<GameObject>> calibratedPlayers;
 	// Use this for initialization
@@ -16,21 +18,51 @@ public class UserTracking : NetworkBehaviour {
         cubes = GameObject.FindGameObjectsWithTag("Player");
         addToPlayers(cubes);
         players = new List<GameObject>() { };
+        calibratedPlayers = new List<List<GameObject>>();
+        Check = false;
+        isFirst = true;
         
     }
 	
 	// Update is called once per frame
 	void Update () {
-        cubes = GameObject.FindGameObjectsWithTag("Player");
-        addToPlayers(cubes);
+        if (Check && isServer)
+        {
+            cubes = GameObject.FindGameObjectsWithTag("Player");
+            addToPlayers(cubes);
+            checkIfPlayerIsTracked();
+            checkIfUsersAreTracked();
+            checkForUsers();
+        }
 
 
+
+    }
+    public void check()
+    {
+        if (isServer && isFirst)
+        {
+            cubes = GameObject.FindGameObjectsWithTag("Player");
+            addToPlayers(cubes);
+            checkForUsers();
+            isFirst = false;
+        }
+        else if (isServer && !isFirst)
+        {
+            cubes = GameObject.FindGameObjectsWithTag("Player");
+            addToPlayers(cubes);
+            checkIfPlayerIsTracked();
+            checkIfUsersAreTracked();
+            checkForUsers();
+            Check = true;
+        }
     }
     public void addToPlayers(GameObject[] cubes)
     {
         for (int i = 0; i < cubes.Length; i++)
         {
             players.Add(cubes[i]);
+
         }
             
     }
@@ -45,9 +77,7 @@ public class UserTracking : NetworkBehaviour {
                 {
                     if(players[i].transform.position.magnitude - players[j].transform.position.magnitude < 0.2)
                     {
-                        List<GameObject> player = new List<GameObject>();
-                        player.Add(players[i]);
-                        player.Add(players[j]);
+                        List<GameObject> player = new List<GameObject>() {players[i],players[j] };
                         calibratedPlayers.Add(player);
                         players.Remove(players[i]);
                         players.Remove(players[j]);
@@ -56,9 +86,7 @@ public class UserTracking : NetworkBehaviour {
                 }
                 else if(players.Count == 1)
                 {
-                    List<GameObject> player = new List<GameObject>();
-                    player.Add(players[i]);
-                    player.Add(players[j]);
+                    List<GameObject> player = new List<GameObject>() { players[i], players[j] };
                     calibratedPlayers.Add(player);
                     players.Remove(players[i]);
                     break;
@@ -107,7 +135,7 @@ public class UserTracking : NetworkBehaviour {
         {
             for (int i = 0; i < calibratedPlayers[i].Count; i++)
             {
-                if (calibratedPlayers[i][j].transform.position.x > 100)
+                if (calibratedPlayers[i][j].transform.position.x > 20)
                 {
                     calibratedPlayers[i].Remove(calibratedPlayers[i][j]);
                     if(calibratedPlayers[i].Count == 0)

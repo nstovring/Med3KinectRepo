@@ -3,6 +3,7 @@ using System.Collections;
 using UnityEngine.Networking;
 using System;
 using System.Xml.Serialization;
+using System.Collections.Generic;
 
 public class OffsetCalculator : NetworkBehaviour {
 
@@ -19,12 +20,24 @@ public class OffsetCalculator : NetworkBehaviour {
     [SyncVar] public Vector3 rotationalOffset;
 
     public  static OffsetCalculator offsetCalculator;
+    bool calcMove;
 
 	void Start ()
 	{
-	    offsetCalculator = this;
+        calcMove = false;
+        oldCords = new Vector3[2];
+        vel = new Vector3[2];
+        angles = new float[1];
+        offsetCalculator = this;
 	}
 
+    void Update()
+    {
+        if (calcMove)
+        {
+            MovementDiff();
+        }
+    }
     public void GetPositionalValuesFromPlayerPrefs()
     {
         Vector3 offsetPosVector3 = new Vector3(PlayerPrefs.GetFloat("PositionalOffsetX"), PlayerPrefs.GetFloat("PositionalOffsetY"), PlayerPrefs.GetFloat("PositionalOffsetZ"));
@@ -89,17 +102,26 @@ public class OffsetCalculator : NetworkBehaviour {
     public void MovementDiff()
     {
         players = GameObject.FindGameObjectsWithTag("Player");
+
         if (players.Length >= 2)
         {
+            Debug.Log(players.Length);
             for (int i = 0; i < players.Length; i++)
             {
+                Debug.Log(vel.Length);
+                Debug.Log(oldCords.Length);
                 vel[i] = oldCords[i] - players[i].transform.position;
                 oldCords[i] = players[i].transform.position;
             }
-            for (int i = 1; i < vel.Length; i++)
+            if (vel[0].magnitude > 0.2)
             {
-                angles[i - 1] = Vector3.Angle(vel[0], vel[i]);
-                Debug.Log(angles[i - 1]);
+                for (int i = 1; i < vel.Length; i++)
+                {
+
+                    angles[i - 1] = Vector3.Angle(vel[0], vel[i]);
+                    Debug.Log(angles[i - 1]);
+                }
+                calcMove = true;
             }
         }
     }
