@@ -31,7 +31,7 @@ public class Logger : MonoBehaviour
     /// <param name="rotation"></param>
     /// <param name="id"></param>
     /// <param name="time"></param>
-    static public void LogData(string tracking, Vector3 position, Vector3 rotation, uint id, string time)
+    static public void LogData(string tracking, Vector3 position, Vector3 rotation, string id, string time)
     {
         using (StreamWriter file =
                new StreamWriter(@"C:\Users\nstovring\Documents\GitHub\Med3KinectRepo\3rdSemKinect\Assets\TestingLogs\LogTracking.txt", true))
@@ -47,7 +47,7 @@ public class Logger : MonoBehaviour
     /// <param name="position"></param>
     /// <param name="id"></param>
     /// <param name="time"></param>
-    static public void LogData(string tracking, Vector3 position, uint id, float time)
+    static public void LogData(string tracking, Vector3 position, string id, float time)
     {
         using (StreamWriter file =
                new StreamWriter(@"C:\Users\nstovring\Documents\GitHub\Med3KinectRepo\3rdSemKinect\Assets\TestingLogs\LogTracking.txt", true))
