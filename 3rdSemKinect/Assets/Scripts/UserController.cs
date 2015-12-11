@@ -181,7 +181,6 @@ public class UserController : NetworkBehaviour
                 }
                 else
                 {
-                    //waitTimers[i] -= 0.1f;
                     if (Logging && allUsers.Contains(userId))
                     {
                         if (waitTimers[i] <= 0)
