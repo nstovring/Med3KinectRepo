@@ -166,9 +166,11 @@ public class UserSyncPosition : NetworkBehaviour
             else
             {
                 Quaternion directionY = Quaternion.AngleAxis(offsetCalculator.rotationalOffset.y, Vector3.up);
-                //Quaternion directionX = Quaternion.AngleAxis(offsetCalculator.rotationalOffset.x, Vector3.left);
-                //Quaternion direction = directionX * directionY;
-                Quaternion direction = directionY;
+                Quaternion directionX = Quaternion.AngleAxis(offsetCalculator.rotationalOffset.x, Vector3.left);
+                Quaternion direction = directionX * directionY;
+
+                Quaternion directionQuaternion = Quaternion.Euler(new Vector3(directionX.x,directionY.y)); 
+                //Quaternion direction = directionY;
 
                 posPointMan = (direction * posPointMan) != Vector3.zero ? (direction * posPointMan) : posPointMan;
                 transform.position = posPointMan;
