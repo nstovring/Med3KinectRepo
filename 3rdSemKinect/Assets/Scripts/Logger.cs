@@ -17,7 +17,7 @@ public class Logger : MonoBehaviour
         System.IO.File.Delete(@"C:\Users\nstovring\Documents\GitHub\Med3KinectRepo\3rdSemKinect\Assets\TestingLogs\LogTracking.txt");
 
         using (StreamWriter file =
-              new StreamWriter(@"C:\Users\nstovring\Documents\GitHub\Med3KinectRepo\3rdSemKinect\Assets\TestingLogs\TestingLogs", true))
+              new StreamWriter(@"C:\Users\nstovring\Documents\GitHub\Med3KinectRepo\3rdSemKinect\Assets\TestingLogs\LogTracking.txt", true))
         {
             file.WriteLine("This is a Header \n");
         }

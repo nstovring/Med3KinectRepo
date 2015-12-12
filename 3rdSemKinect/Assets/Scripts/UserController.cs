@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Runtime.InteropServices;
 using System.IO;
 using System.Text;
+using System.Threading;
 using UnityEditor;
 using UnityEngine.Networking;
 using UnityEngine.UI;
@@ -17,7 +18,7 @@ public class UserController : NetworkBehaviour
     public GameObject[] users = new GameObject[6];
     public GameObject prefab;
 
-    readonly Vector3 initialPosVector3 = new Vector3(50, 0, 0);
+    readonly Vector3 initialPosVector3 = new Vector3(50, 50, 50);
 
     public List<string> allUsers;
     private OffsetCalculator offsetCalculator;
@@ -121,9 +122,47 @@ public class UserController : NetworkBehaviour
     }
     public float[] waitTimers = new float[6];
 
+    public GameObject[] playersGameObjects = new GameObject[12];
+
+    public List<Transform> usersList = new List<Transform>();
+    float test3Timer = 120f;
     [ClientCallback]
     void Update()
     {
+        if (Logging)
+        {
+            test3Timer -= Time.deltaTime;
+        }
+        if (test3Timer <= 0)
+        {
+            Logging = false;
+        }
+
+        playersGameObjects = GameObject.FindGameObjectsWithTag("Player");
+        for (int i = 0; i < playersGameObjects.Length; i++)
+        {
+            for (int j = 0; j < playersGameObjects.Length; j++)
+            {
+                if (Mathf.Abs(playersGameObjects[i].transform.position.x - playersGameObjects[j].transform.position.x) < 20f &&
+                    Mathf.Abs(playersGameObjects[i].transform.position.x - playersGameObjects[j].transform.position.x) > 0 && playersGameObjects[i].transform.position.x < 5)
+                    {
+                    //if ( Vector3.Distance(playersGameObjects[i].transform.position, playersGameObjects[j].transform.position) < 20f && 
+                    //    Vector3.Distance(playersGameObjects[i].transform.position, playersGameObjects[j].transform.position) > 0)
+                    //{
+                    if (!usersList.Contains(playersGameObjects[i].transform))
+                    {
+                        usersList.Add(playersGameObjects[i].transform);
+                    }
+                }
+                else
+                {
+                    if (usersList.Contains(playersGameObjects[i].transform))
+                    {
+                        usersList.Remove(playersGameObjects[i].transform);
+                    }
+                }
+            }
+        }
         manager = KinectManager.Instance;
 
         if (Logging)
@@ -169,7 +208,14 @@ public class UserController : NetworkBehaviour
                     if (timeReset > 0 && timeReset < 1 && timeBool && Logging)
                     {
                         Debug.Log("Continued tracking");
-                        Logger.LogData("Tracking Continued: ", skeletonPos, userId, timePassed);
+                        for (int j = 0; j < users.Length; j++)
+                        {
+                            if (users[j].transform.position.x < 10)
+                            {
+                                //Logger.LogData("Tracking Continued: ", users[j].transform.position, users[j].name,timePassed);
+                            }
+                        }
+                        //Logger.LogData("Tracking Continued: ", skeletonPos, userId, timePassed);
                         timeBool = false;
                     }
                     if (timeReset > 1)
