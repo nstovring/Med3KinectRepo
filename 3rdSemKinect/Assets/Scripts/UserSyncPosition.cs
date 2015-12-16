@@ -13,8 +13,6 @@ public class UserSyncPosition : NetworkBehaviour
     [SyncVar] public bool positionalOffset;
     [SyncVar] public bool rotationalOffset;
 
-   // [SyncVar] public bool Offset;
-
     [SyncVar] private Color userColor;
     [SyncVar] private string objectName;
 
@@ -30,6 +28,10 @@ public class UserSyncPosition : NetworkBehaviour
     private UserController PlayerObject;
 
     private bool isTrackingLost = true;
+
+    private float syncStep = 0.1f;
+    private float timePassed;
+    public string userId;
     // Update is called once per frame
     void Update()
     {
@@ -46,15 +48,6 @@ public class UserSyncPosition : NetworkBehaviour
         {
             TransmitPosition();
         }
-        /*else if(isLocalPlayer)
-        {
-            timePassed += Time.deltaTime;
-            if (timePassed >= syncStep)
-            {
-                CmdProvidePositionToServer(myTransform.position, Vector3.zero);
-                timePassed = 0;
-            }
-        }*/
         LerpPosition();
     }
 
@@ -84,8 +77,7 @@ public class UserSyncPosition : NetworkBehaviour
         NetworkServer.Spawn(gameObject);
     }
 
-    private float syncStep = 0.1f;
-    private float timePassed;
+
 
     public void TransmitPosition()
     {
@@ -99,8 +91,6 @@ public class UserSyncPosition : NetworkBehaviour
             else
             {
                 MoveWithUser();
-                //TiltWithUser();
-                //RotateWithUser();
                 OrientWithUser();
                 CmdProvidePositionToServer(myTransform.position, myTransform.rotation.eulerAngles);
             }
@@ -142,7 +132,6 @@ public class UserSyncPosition : NetworkBehaviour
             Quaternion directionY = Quaternion.AngleAxis(offsetCalculator.rotationalOffset.y, Vector3.up);
             Quaternion directionX = Quaternion.AngleAxis(offsetCalculator.rotationalOffset.x, Vector3.right);
             Quaternion direction = directionX*directionY;
-            //Quaternion direction = directionY;
 
             posPointMan = (direction * posPointMan) != Vector3.zero ? (direction * posPointMan) : posPointMan;
             transform.position = posPointMan;
@@ -159,11 +148,7 @@ public class UserSyncPosition : NetworkBehaviour
         }
     }
 
-    void LogPosition()
-    {
-        Logger.LogData("Logging Position", transform.position, transform.rotation.eulerAngles, userId, "No time Logged " + (GetComponent<NetworkIdentity>().netId.Value - 1));
-    }
-
+  
     [Client]
     public void MoveWithUser(Vector3 posPointMan)
     {
@@ -185,8 +170,6 @@ public class UserSyncPosition : NetworkBehaviour
                 Quaternion directionX = Quaternion.AngleAxis(offsetCalculator.rotationalOffset.x, Vector3.left);
                 Quaternion direction = directionX * directionY;
 
-                Quaternion directionQuaternion = Quaternion.Euler(new Vector3(directionX.x,directionY.y)); 
-                //Quaternion direction = directionY;
 
                 posPointMan = (direction * posPointMan) != Vector3.zero ? (direction * posPointMan) : posPointMan;
                 transform.position = posPointMan;
@@ -208,8 +191,6 @@ public class UserSyncPosition : NetworkBehaviour
             }
         }
     }
-
-    public string userId;
 
     public void MoveWithUser(Vector3 posPointMan, string userId)
     {
@@ -231,9 +212,6 @@ public class UserSyncPosition : NetworkBehaviour
                 Quaternion directionX = Quaternion.AngleAxis(offsetCalculator.rotationalOffset.x, Vector3.left);
                 Quaternion direction = directionX * directionY;
 
-                Quaternion directionQuaternion = Quaternion.Euler(new Vector3(directionX.x, directionY.y));
-                //Quaternion direction = directionY;
-
                 posPointMan = (direction * posPointMan) != Vector3.zero ? (direction * posPointMan) : posPointMan;
                 transform.position = posPointMan;
                 posPointMan += offsetCalculator.positionalOffset;
@@ -254,6 +232,12 @@ public class UserSyncPosition : NetworkBehaviour
             }
         }
     }
+
+    void LogPosition()
+    {
+        Logger.LogData("Logging Position", transform.position, transform.rotation.eulerAngles, userId, "No time Logged " + (GetComponent<NetworkIdentity>().netId.Value - 1));
+    }
+
 
     [Client]
     private void OrientWithUser()

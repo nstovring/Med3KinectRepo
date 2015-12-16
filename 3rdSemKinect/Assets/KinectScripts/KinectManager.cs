@@ -10,6 +10,7 @@ using System.Text;
 
 public class KinectManager : MonoBehaviour
 {
+    public bool Identity;
 	public enum Smoothing : int { None, Default, Medium, Aggressive }
 	
 	
@@ -988,11 +989,14 @@ public class KinectManager : MonoBehaviour
 	            Quaternion quatTiltAngle = new Quaternion();
 	            quatTiltAngle.eulerAngles = new Vector3(-SensorAngle, 0.0f, 0.0f);
 
-	            //float heightAboveHips = SensorHeight - 1.0f;
+            //float heightAboveHips = SensorHeight - 1.0f;
 
-	            // transform matrix - kinect to world
-	            //kinectToWorld.SetTRS(new Vector3(0.0f, heightAboveHips, 0.0f), quatTiltAngle, Vector3.one);
-	            kinectToWorld.SetTRS(new Vector3(0.0f, SensorHeight, 0.0f), quatTiltAngle, Vector3.one);
+            // transform matrix - kinect to world
+            //kinectToWorld.SetTRS(new Vector3(0.0f, heightAboveHips, 0.0f), quatTiltAngle, Vector3.one);
+	            if (Identity)
+	            {
+	                kinectToWorld.SetTRS(new Vector3(0.0f, SensorHeight, 0.0f), quatTiltAngle, Vector3.one);
+	            }
 	            flipMatrix = Matrix4x4.identity;
 	            flipMatrix[2, 2] = -1;
 

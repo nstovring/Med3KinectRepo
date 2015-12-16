@@ -114,6 +114,7 @@ public class UserController : NetworkBehaviour
     public void StartLogging()
     {
         Logging = true;
+        Debug.Log("Logging!");
     }
 
     public void StopLogging()
@@ -125,19 +126,9 @@ public class UserController : NetworkBehaviour
     public GameObject[] playersGameObjects = new GameObject[12];
 
     public List<Transform> usersList = new List<Transform>();
-    float test3Timer = 120f;
     [ClientCallback]
     void Update()
     {
-        if (Logging)
-        {
-            test3Timer -= Time.deltaTime;
-        }
-        if (test3Timer <= 0)
-        {
-            Logging = false;
-        }
-
         playersGameObjects = GameObject.FindGameObjectsWithTag("Player");
         for (int i = 0; i < playersGameObjects.Length; i++)
         {
@@ -212,7 +203,7 @@ public class UserController : NetworkBehaviour
                         {
                             if (users[j].transform.position.x < 10)
                             {
-                                //Logger.LogData("Tracking Continued: ", users[j].transform.position, users[j].name,timePassed);
+                                Logger.LogData("Tracking Continued: ", users[j].transform.position, users[j].name,timePassed);
                             }
                         }
                         //Logger.LogData("Tracking Continued: ", skeletonPos, userId, timePassed);
