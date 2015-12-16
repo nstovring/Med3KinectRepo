@@ -23,7 +23,7 @@ PrintWriter output;
 void setup()
 {
   String viewPointFileName;
-  viewPointFileName = "myPoints1" + ".ply";
+  viewPointFileName = "myPoints02" + ".ply";
   output = createWriter(dataPath(viewPointFileName)); 
   
   size(1024,768,P3D);
@@ -108,6 +108,7 @@ void GetPoints(){
         realWorldPoint = realWorldMap[index];
         //Write the projected point to file
         output.println((-realWorldPoint.x) +" "+ (realWorldPoint.y) +" "+(-realWorldPoint.z) +" "); //-x to remove mirroring
+        counter++;
       }  
     }
   } 
