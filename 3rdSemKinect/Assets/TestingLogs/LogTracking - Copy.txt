@@ -1,0 +1,12 @@
+Logging Position	(0.1, 0.6, 2.1)	 Orientation:	(9.4, 11.1, 1.8)	 UserID:		Time:	No time Logged 1
+Logging Position	(-1.7, 0.2, 1.9)	 Orientation:	(9.9, 3.6, 0.6)	 UserID:		Time:	No time Logged 2
+Logging Position	(-1.0, 0.5, 2.3)	 Orientation:	(5.4, 43.2, 5.1)	 UserID:		Time:	No time Logged 1
+Logging Position	(-2.7, 0.2, 2.2)	 Orientation:	(4.8, 31.6, 2.9)	 UserID:		Time:	No time Logged 2
+Logging Position	(0.9, 0.5, 2.8)	 Orientation:	(10.3, 342.6, 356.8)	 UserID:		Time:	No time Logged 1
+Logging Position	(-0.8, 0.2, 2.3)	 Orientation:	(7.2, 336.3, 356.9)	 UserID:		Time:	No time Logged 2
+Logging Position	(0.1, 0.5, 2.1)	 Orientation:	(8.1, 6.4, 0.9)	 UserID:		Time:	No time Logged 1
+Logging Position	(0.1, 0.6, 2.1)	 Orientation:	(7.3, 351.3, 359.7)	 UserID:		Time:	No time Logged 2
+Logging Position	(-1.0, 0.5, 2.4)	 Orientation:	(3.9, 51.2, 4.8)	 UserID:		Time:	No time Logged 1
+Logging Position	(-0.9, 0.5, 2.6)	 Orientation:	(3.0, 31.7, 2.7)	 UserID:		Time:	No time Logged 2
+Logging Position	(0.9, 0.5, 2.8)	 Orientation:	(9.7, 343.1, 357.1)	 UserID:		Time:	No time Logged 1
+Logging Position	(1.0, 0.5, 2.5)	 Orientation:	(3.8, 328.6, 358.0)	 UserID:		Time:	No time Logged 2
