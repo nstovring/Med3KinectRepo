@@ -169,13 +169,13 @@ public class OffsetCalculator : NetworkBehaviour {
     {
         players = GameObject.FindGameObjectsWithTag("Player");
         VelocityCalculator unitCam = players[0].GetComponent<VelocityCalculator>();
+        VelocityCalculator velCalc;
         float[][] angles = new float[players.Length-1][];
         float[] avgAngles = new float[players.Length-1];
         if (players.Length >= 2)
         {
             if (unitCam.full)
             {
-                VelocityCalculator velCalc;
                 for(int i = 1; i < players.Length; i++)
                 {
                     velCalc = players[i].GetComponent<VelocityCalculator>();

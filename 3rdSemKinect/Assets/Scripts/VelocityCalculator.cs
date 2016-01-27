@@ -16,7 +16,7 @@ public class VelocityCalculator : NetworkBehaviour {
         full = false;
         frameCounter = 0;
         //how many frames we want to calculate over
-        frames = 5;
+        frames = 30;
         positions = new Vector3[frames];
         velocities = new Vector3[frames-1];
         standard = new Vector3(50, 50, 50);
@@ -26,7 +26,8 @@ public class VelocityCalculator : NetworkBehaviour {
 	void Update () {
         if (isServer)
         {
-            if(gameObject.transform.position.magnitude < standard.magnitude)
+            //if(gameObject.transform.position.magnitude < standard.magnitude)
+            if(true)
             {
                 calcVel();
                 if(frameCounter < frames)
@@ -53,7 +54,7 @@ public class VelocityCalculator : NetworkBehaviour {
         positions[0] = gameObject.transform.position;
         for(int i = frames-1; i >= 1; i--)
         {
-            velocities[i - 1] = positions[i] - positions[i - 1];
+            velocities[i - 1] = positions[i-1] - positions[i];
         }
         for (int i = frames - 1; i >= 1; i--)
         {
