@@ -164,4 +164,32 @@ public class OffsetCalculator : NetworkBehaviour {
             }
         }
     }
+    public void VelocityAngles() //new method using the velocity calculator information
+        //THIS SHOULD ONLY BE CALLED WHEN THERE IS ONE PERSON IN THE SCENE
+    {
+        players = GameObject.FindGameObjectsWithTag("Player");
+        VelocityCalculator unitCam = players[0].GetComponent<VelocityCalculator>();
+        float[][] angles = new float[players.Length-1][];
+        float[] avgAngles = new float[players.Length-1];
+        if (players.Length >= 2)
+        {
+            if (unitCam.full)
+            {
+                VelocityCalculator velCalc;
+                for(int i = 1; i < players.Length; i++)
+                {
+                    velCalc = players[i].GetComponent<VelocityCalculator>();
+                    if (velCalc.full)
+                    {
+                        angles[i - 1] = new float[unitCam.velocities.Length];
+                        for(int j = 0; j < unitCam.velocities.Length; j++)
+                        {
+                            angles[i - 1][j] = Vector3.Angle(unitCam.velocities[j], velCalc.velocities[j]);
+                        }
+                        avgAngles[i-1] = Vector3.Angle(unitCam.avgVel, velCalc.avgVel);
+                    }
+                }
+            }
+        }
+    }
 }

@@ -41,7 +41,7 @@ public class VelocityCalculator : NetworkBehaviour {
             else
             {
                 positions = new Vector3[frames];
-                velocities = new Vector3[frames];
+                velocities = new Vector3[frames-1];
                 frameCounter = 0;
                 full = false;
             }
