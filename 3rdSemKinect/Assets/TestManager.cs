@@ -25,10 +25,22 @@ public class TestManager : NetworkBehaviour {
     public Vector3[] solForY;
     public float[] planeAngles;
     Vector3[][] planeAng;
+    public Vector3 xAngle;
+    public Vector3 finalAngle;
+    Vector3 sum;
+    public Vector3 finalFinalAngle;
+    public Vector3 MathsSolution;
+    int num;
+    int num1;
+    public Vector3[] moreAngles;
     // Use this for initialization
     void Start () {
-        desiredVel = new Vector3(2, 0, 4);
-        desiredVel1 = new Vector3(4, 0, 2);
+        sum = Vector3.zero;
+        num = 0;
+        num1 = 0;
+        MathsSolution = Vector3.zero;
+        desiredVel = new Vector3(2, 1, 4);
+        desiredVel1 = new Vector3(4, 1, 2);
         OGPos = new Vector3(0, 0, 0);
         OGPos1 = new Vector3(0, 0, 0);
         solForY = new Vector3[3];
@@ -45,10 +57,25 @@ public class TestManager : NetworkBehaviour {
             OGPos += desiredVel;
             OGPos1 += desiredVel1;
             players[0].transform.position = OGPos;
-            angleVec = new Vector3(angle,angle, angle);
+            players[1].transform.position = OGPos1;
+            angleVec = new Vector3(30,angle,2.5f);
             QAngles = Quaternion.Euler(angleVec);
-            players[1].transform.position = QAngles * (OGPos);
-            players[2].transform.position = QAngles * (OGPos1);
+            Debug.Log(QAngles);
+            players[2].transform.position = QAngles * (OGPos + randomVector(0.2f));
+            players[3].transform.position = QAngles * (OGPos1 + randomVector(0.2f));
+            finalAngle = Vector3.zero;
+            if(num < 0)
+            {
+                if (num == 5)
+                {
+                    Debug.Log(players[2].GetComponent<VelocityCalculator>().avgVel);
+                    Debug.Log(players[3].GetComponent<VelocityCalculator>().avgVel);
+                }
+                Quaternion realAngles = Quaternion.Euler(MathsSolution);
+                players[2].transform.position = realAngles* players[2].transform.position ;
+                players[3].transform.position = realAngles * players[3].transform.position;
+
+            }
             /*for (int i = 1; i < players.Length; i++)
             {
                 angleVec = new Vector3(angle, angle, angle);
@@ -60,14 +87,25 @@ public class TestManager : NetworkBehaviour {
                 randVec = new Vector3(Random.Range(-0.5f, 0.5f), Random.Range(-0.5f, 0.5f), Random.Range(-0.5f, 0.5f));
                 players[i].transform.position = QAngles*(OGPos + new Vector3(1000*(i-1), 0, 1000 * (i - 1)));
             }*/
-            VelocityAngles();
+            //VelocityAngles();
+            /*if(num < 5 || num > 15)
+            {
+                VectorMathsSolution();
+            }
+            */
+            VectorMathsSolution();
         }
 	}
+    public Vector3 randomVector(float range)
+    {
+        return new Vector3(Random.Range(-range, range), Random.Range(-range, range), Random.Range(-range, range));
+    }
     public void VelocityAngles() //new method using the velocity calculator information
                                  //THIS SHOULD ONLY BE CALLED WHEN THERE IS ONE PERSON IN THE SCENE
     {
         //players = GameObject.FindGameObjectsWithTag("Player");
         VelocityCalculator unitCam = players[0].GetComponent<VelocityCalculator>();
+        Debug.Log(players[0].name);
         VelocityCalculator velCalc;
         float[][] angles = new float[players.Length - 1][];
         float[] avgAngles = new float[players.Length - 1];
@@ -78,6 +116,7 @@ public class TestManager : NetworkBehaviour {
                 for (int i = 1; i < players.Length; i++)
                 {
                     velCalc = players[i].GetComponent<VelocityCalculator>();
+                    Debug.Log(players[i].name);
                     if (velCalc.full)
                     {
                         angles[i - 1] = new float[unitCam.velocities.Length];
@@ -128,13 +167,13 @@ public class TestManager : NetworkBehaviour {
                 planeAng[0] = new Vector3[planeAng.GetLength(0) + 2];
                 for(int i = 0; i < planeAng[0].Length; i++)
                 {
-                    point1 = new Vector3(1+5*i, 1, 1);
+                    point1 = new Vector3(1+1*i, 1, 1);
                     planeAng[0][i] = solveForY(n, 0, point1);
                 }
                 planeAng[1] = new Vector3[planeAng.GetLength(0) + 2];
                 for (int i = 0; i < planeAng[1].Length; i++)
                 {
-                    point1 = new Vector3(1, 1, 1+5*i);
+                    point1 = new Vector3(1, 1, 1+1*i);
                     planeAng[1][i] = solveForY(n, 0, point1);
                 }
                 planeAng[2] = new Vector3[planeAng.GetLength(0) + 2];
@@ -157,12 +196,13 @@ public class TestManager : NetworkBehaviour {
                     for(int j = 1; j < planeAng[i].Length; j++)
                     {
                         planeAngles[(i * planeAng[0].Length + j)-1] = i == 0 ? Vector3.Angle(planeAng[i][j]- planeAng[i][j-1], Vector3.right) : i == 1 ? Vector3.Angle(planeAng[i][j] - planeAng[i][j - 1], Vector3.forward) : i == 2 ? Vector3.Angle(planeAng[i][j] - planeAng[i][j - 1], Vector3.forward) : i == 3 ? Vector3.Angle(planeAng[i][j] - planeAng[i][j - 1], Vector3.forward) : 0;
+                        //planeAngles[(i * planeAng[0].Length + j) - 1] = i == 0 ? Vector3.Angle(planeAng[i][j], Vector3.forward) : i == 1 ? Vector3.Angle(planeAng[i][j], Vector3.right) : i == 2 ? Vector3.Angle(planeAng[i][j] - planeAng[i][j - 1], Vector3.forward) : i == 3 ? Vector3.Angle(planeAng[i][j] - planeAng[i][j - 1], Vector3.forward) : 0;
                     }
                 }
                 //avgAngles[0] = Vector3.Angle(planeAng[1][2]- planeAng[1][1], Vector3.forward);
                 for (int i = 0; i < planeAng[1].Length; i++)
                 {
-                    Debug.Log(planeAng[2][i]);
+                    //Debug.Log(planeAng[2][i]);
                 }
             }
         }
@@ -183,4 +223,163 @@ public class TestManager : NetworkBehaviour {
         float result = (equals - (point.x * equation.x + point.y * equation.y)) / equation.z;
         return new Vector3(point.x, point.y, result);
     }
+    public void VectorMathsSolution()
+    {
+        VelocityCalculator unitCam1 = players[0].GetComponent<VelocityCalculator>();
+        Vector3[] velocities = new Vector3[players.Length];
+        Vector3 v1;
+        Vector3 v2;
+        Vector3 v3;
+        Vector3 w1;
+        Vector3 w2;
+        Vector3 w3;
+        if (unitCam1.full)
+        {
+            for (int i = 0; i < players.Length; i++)
+            {
+                velocities[i] = players[i].GetComponent<VelocityCalculator>().avgVel;
+            }
+
+            v1 = velocities[0];
+            v2 = velocities[1];
+            v3 = Vector3.Cross(v1, v2);
+            w1 = velocities[2];
+            w2 = velocities[3];
+            w3 = Vector3.Cross(w1, w2);
+            //Debug.Log("v1 and v2 cross = " + v3);
+            //Debug.Log("w1 and w2 cross = " + w3);
+            float[][] m1 = convertTo3x3(v1, v2, v3);
+            float[][] m2 = convertTo3x3(w1, w2, w3);
+            float[][] m3 = Times3x3(m2, invert3x3(m1));
+            //m3 = invert3x3(m3);
+            if (num == 5)
+            {
+                Debug.Log("[" + m3[0][0] + "]   " + "[" + m3[0][1] + "]   " + "[" + m3[0][2] + "]   ");
+                Debug.Log("[" + m3[1][0] + "]   " + "[" + m3[1][1] + "]   " + "[" + m3[1][2] + "]   ");
+                Debug.Log("[" + m3[2][0] + "]   " + "[" + m3[2][1] + "]   " + "[" + m3[2][2] + "]   ");
+            }
+            /*Debug.Log("m1 = "+m1[0][0]);
+            Debug.Log("m2 = " + m2[0][0]);
+            Debug.Log("m3 = " + m3[0][0]);*/
+
+            MathsSolution.x = Mathf.Atan2(m3[2][1], m3[2][2]) * Mathf.Rad2Deg;
+            MathsSolution.y = Mathf.Atan2(-m3[2][0], Mathf.Sqrt(Mathf.Pow(m3[2][1], 2) + Mathf.Pow(m3[2][2], 2))) * Mathf.Rad2Deg;
+            MathsSolution.z = Mathf.Atan2(m3[1][0], m3[0][0]) * Mathf.Rad2Deg;
+            moreAngles = new Vector3[225];
+            xAngle = Vector3.up * MathsSolution.y;
+            //xAngle = MathsSolution;
+            for (int i = 0; i < moreAngles.Length; i++)
+            {
+                
+                Quaternion timingX = Quaternion.Euler(xAngle);
+                Vector3 q1 = timingX * w1;
+                Vector3 q2 = timingX * w2;
+                Vector3 q3 = Vector3.Cross(q1, q2);
+                m2 = convertTo3x3(q1, q2, q3);
+                m3 = Times3x3(m2, invert3x3(m1));
+                moreAngles[i] = new Vector3(Mathf.Atan2(m3[2][1], m3[2][2]) * Mathf.Rad2Deg, Mathf.Atan2(-m3[2][0], Mathf.Sqrt(Mathf.Pow(m3[2][1], 2) + Mathf.Pow(m3[2][2], 2))) * Mathf.Rad2Deg, Mathf.Atan2(m3[1][0], m3[0][0]) * Mathf.Rad2Deg);
+                xAngle += Vector3.up * moreAngles[i].y;
+                //xAngle += moreAngles[i];
+            }
+            finalAngle = moreAngles[moreAngles.Length - 1] + xAngle;
+            num++;
+            sum += finalAngle;
+            finalFinalAngle = sum/num;
+        }
+
+    }
+    public float[][] convertTo3x3(Vector3 v1, Vector3 v2, Vector3 v3)
+    {
+        Vector3[] vectors = new Vector3[] { v1, v2, v3 };
+        float[][] result = new float[3][];
+        for(int i = 0; i < result.GetLength(0); i++)
+        {
+            result[i] = new float[3];
+            result[i][0] = vectors[i].x;
+            result[i][1] = vectors[i].y;
+            result[i][2] = vectors[i].z;
+        }
+        return result;
+
+    }
+    public float[][] Times3x3 (float[][] m1, float[][] m2)
+    {
+        float[][] result = new float[3][];
+        result[0] = new float[3];
+        result[1] = new float[3];
+        result[2] = new float[3];
+        for (int i = 0; i < result.GetLength(0); i++)
+        {
+            for (int j = 0; j < result[i].Length; j++)
+            {
+                result[i][j] = m1[0][j] * m2[i][0] + m1[1][j] * m2[i][1] + m1[2][j] * m2[i][2];
+                /*Debug.Log("m1 " + 0 + " " + j + " = " + m1[0][j]);
+                Debug.Log("m2 " + i + " " + 0 + " = " + m2[i][0]);
+                Debug.Log("result " + i + " " + j + " = " + result[i][j]);*/
+
+            }
+        }
+       // Debug.Log("result 0 0 = " + result[1][1]);
+        return result;
+    }
+    public float[][] invert3x3(float[][] m)
+    {
+
+        float[][] A = m; //The matrix that is entered from the data.
+        //Debug.Log("A " + 0 + " " + 0 + " = " + A[0][0]);
+        float[][] B = new float[3][]; //The transpose matrix of A
+        float[][] C = new float[3][]; //The adjoint matrix of A adj(A)
+        float[][] X = new float[3][];
+        B[0] = new float[3]; B[1] = new float[3]; B[2] = new float[3];
+        C[0] = new float[3]; C[1] = new float[3]; C[2] = new float[3];
+        X[0] = new float[3]; X[1] = new float[3]; X[2] = new float[3];
+        //The inverse of A (adj(A)/det)
+        float det; //The determinant of A
+        /* Calculate the determinant of A (det)*/
+        float a = A[0][0] * (A[1][1] * A[2][2] - A[2][1] * A[1][2]);
+        //Debug.Log("a = " + a);
+        //Debug.Log((A[1][1] * A[2][2] - A[2][1] * A[1][2]));
+       /* for(int i = 0; i < A.GetLength(0); i++)
+        {
+            for (int j = 0; j < A[0].Length; j++)
+            {
+                Debug.Log("A " + i + " " + j + " = " + A[i][j]);
+            }
+        }*/
+        float b = A[0][1] * (A[1][0] * A[2][2] - A[2][0] * A[1][2]);
+        //Debug.Log("b = " + b);
+        float c = A[0][2] * (A[1][0] * A[2][1] - A[2][0] * A[1][1]);
+        //Debug.Log("c = " + c);
+        det = a - b + c;
+        //Debug.Log("det = " + det);
+        /* Find the transpose matrix (B)/> of A */
+        for (int i=0 ; i<3 ; i++) {
+            for(int j=0 ; j<3 ; j++) {
+             
+                B[i][j] = A[j][i];
+            }
+        }
+     
+        /* Calculate the adjoint matrix (C) of A*/
+        C[0][0] =   B[1][1]* B[2][2] - B[2][1]* B[1][2];
+        C[0][1] = -(B[1][0]* B[2][2] - B[2][0]* B[1][2]);
+        C[0][2] =   B[1][0]* B[2][1] - B[2][0]* B[1][1];
+        C[1][0] = -(B[0][1]* B[2][2] - B[2][1]* B[0][2]);
+        C[1][1] =   B[0][0]* B[2][2] - B[2][0]* B[0][2];
+        C[1][2] = -(B[0][0]* B[2][1] - B[2][0]* B[0][1]);
+        C[2][0] =   B[0][1]* B[1][2] - B[1][1]* B[0][2];
+        C[2][1] = -(B[0][0]* B[1][2] - B[1][0]* B[0][2]);
+        C[2][2] =   B[0][0]* B[1][1] - B[1][0]* B[0][1];
+        /* Calculate the inverse matrix of A (adj(A)/det) */
+        for(int i=0 ; i<3 ; i++) {
+            for(int j=0 ; j<3 ; j++) {
+             
+                X[i][j] = C[i][j]/det;
+             
+            }
+        }
+        return X;
+   }
+
 }
+
