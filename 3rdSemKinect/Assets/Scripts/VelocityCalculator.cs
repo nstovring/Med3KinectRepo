@@ -16,7 +16,7 @@ public class VelocityCalculator : NetworkBehaviour {
         full = false;
         frameCounter = 0;
         //how many frames we want to calculate over
-        frames = 60;
+        frames = 20;
         positions = new Vector3[frames];
         velocities = new Vector3[frames-1];
         standard = new Vector3(50, 50, 50);

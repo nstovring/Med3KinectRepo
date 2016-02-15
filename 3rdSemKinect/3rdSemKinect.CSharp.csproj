@@ -95,6 +95,7 @@
     <Compile Include="Assets\Scripts\UserTracking.cs" />
     <Compile Include="Assets\Scripts\VelocityCalculator.cs" />
     <Compile Include="Assets\TestManager.cs" />
+    <Compile Include="Assets\skeletonCreator.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Assets\TestingLogs\LogTracking - Copy.txt" />

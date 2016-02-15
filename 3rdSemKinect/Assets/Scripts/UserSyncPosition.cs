@@ -30,7 +30,7 @@ public class UserSyncPosition : NetworkBehaviour
     public bool isCalibrationUser = true;
 
     //Reference to the kinectmanager class
-    private KinectManager manager;
+    private KinectManager manager = KinectManager.Instance;
     //Reference to the offsetcalculator
     private OffsetCalculator offsetCalculator;
     //Reference to the object which controlls multiple users
@@ -45,6 +45,8 @@ public class UserSyncPosition : NetworkBehaviour
     //The name of this object
     public string userId;
 
+    public bool isGivenJoint = false;
+    public int jointNum = -1;
     // Update is called once per frame
     void Update()
     {
@@ -61,7 +63,16 @@ public class UserSyncPosition : NetworkBehaviour
         //If this is a calibration user control its own movement
         if (isCalibrationUser)
         {
-            TransmitPosition();
+            if (!isGivenJoint)
+            {
+                TransmitPosition();
+            }
+            else if (isGivenJoint)
+            {
+                TransmitPosition(jointNum);
+
+            }
+            
         }
         //Call lerpPosition
         LerpPosition();
@@ -152,7 +163,28 @@ public class UserSyncPosition : NetworkBehaviour
         }
     }
 
-    
+    public void TransmitPosition(int jointNum)
+    {
+        //Only move if being controlled by the client which created this gameObject
+        if (hasAuthority && isCalibrationUser)
+        {
+            //Check if the KinectManager class is accesisble
+            if (manager == null)
+            {
+                manager = KinectManager.Instance;
+
+            }
+            else
+            {
+                //The KinecManager must be there therefore Move & Orient to tracked individual and Tell the server my new posistion and rotation
+                uint playerID = manager != null ? manager.GetPlayer1ID() : 0;
+                MoveWithUser(manager.GetJointPosition(playerID,jointNum));
+                OrientWithUser();
+                CmdProvidePositionToServer(myTransform.position, myTransform.rotation.eulerAngles);
+            }
+        }
+    }
+
     //Client attribute means that this method will only run on clients
     [Client]
     public void MoveWithUser()

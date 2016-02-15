@@ -7,13 +7,14 @@ using System.Collections.Generic;
 
 //This class is responsible for calculating offsets on the server, and apply them on the clients
 public class OffsetCalculator : NetworkBehaviour {
-    
+
     //Varibles are defined
     private Vector3 player2Offset;
     private float player2angleOffset;
 
     //The players array is useed to contain the cubes in the scene
     private GameObject[] players;
+    private GameObject[] skeletonCreators;
 
     private float player1AngleFromKinect;
 
@@ -23,11 +24,23 @@ public class OffsetCalculator : NetworkBehaviour {
     [SyncVar] public Vector3 rotationalOffset;
 
     //This static Offsetcalculator is used to reference a single instance of the offsetcalculator script
-    public  static OffsetCalculator offsetCalculator;
+    public static OffsetCalculator offsetCalculator;
     bool calcMove;
+    public Vector3[] oldCords;
+    public Vector3[] vel;
+    public float[] angles;
+    private int amount;
+    Vector3[] angleSum;
+    Vector3[] avgNewAngles;
+    public int kinectAmount;
 
-	void Start ()
-	{
+    void Start()
+    {
+        if(kinectAmount != 0)
+        {
+            angleSum = new Vector3[kinectAmount - 1];
+            avgNewAngles = new Vector3[kinectAmount-1];
+        }
         //calcMove is used to see if the velocity calibration should be used or if it is the postional vector calibration.
         calcMove = false;
         oldCords = new Vector3[2];
@@ -36,15 +49,15 @@ public class OffsetCalculator : NetworkBehaviour {
 
         //Here the offsetcalculator variable is set to this instance of the script, making other scripts able to easily get this script
         offsetCalculator = this;
-        
-	}
+
+    }
 
     void Update()
     {
         //calls the velocity calibration method
         if (calcMove)
         {
-            MovementDiff();
+            realVelocityAngles();
         }
     }
     //This method is used if the offsets have already been calculated and been saved in the file PlayerPrefs which is inheriant to Unity
@@ -67,7 +80,7 @@ public class OffsetCalculator : NetworkBehaviour {
 
         //the code must only run if there are more than two cubes in the scene, as you can't calculate offset on a single cube
         if (players.Length >= 2)
-       {
+        {
             //the offsets are calculated using different methods that use the player array
             positionalOffset = GetPositionOffset();
             rotationalOffset = GetRotationOffset();
@@ -128,9 +141,6 @@ public class OffsetCalculator : NetworkBehaviour {
     }
 
     //defining variables that are only used by the MovementDiff() method, which is the velocity calibration method
-    public Vector3[] oldCords;
-    public Vector3[] vel;
-    public float[] angles;
 
     //the method calculates the difference in velocity of two cubes, and thereby the angle bewteen kinects
     public void MovementDiff()
@@ -165,31 +175,247 @@ public class OffsetCalculator : NetworkBehaviour {
         }
     }
     public void VelocityAngles() //new method using the velocity calculator information
-        //THIS SHOULD ONLY BE CALLED WHEN THERE IS ONE PERSON IN THE SCENE
+                                 //THIS SHOULD ONLY BE CALLED WHEN THERE IS ONE PERSON IN THE SCENE
     {
         players = GameObject.FindGameObjectsWithTag("Player");
         VelocityCalculator unitCam = players[0].GetComponent<VelocityCalculator>();
         VelocityCalculator velCalc;
-        float[][] angles = new float[players.Length-1][];
-        float[] avgAngles = new float[players.Length-1];
+        float[][] angles = new float[players.Length - 1][];
+        float[] avgAngles = new float[players.Length - 1];
         if (players.Length >= 2)
         {
             if (unitCam.full)
             {
-                for(int i = 1; i < players.Length; i++)
+                for (int i = 1; i < players.Length; i++)
                 {
                     velCalc = players[i].GetComponent<VelocityCalculator>();
                     if (velCalc.full)
                     {
                         angles[i - 1] = new float[unitCam.velocities.Length];
-                        for(int j = 0; j < unitCam.velocities.Length; j++)
+                        for (int j = 0; j < unitCam.velocities.Length; j++)
                         {
                             angles[i - 1][j] = Vector3.Angle(unitCam.velocities[j], velCalc.velocities[j]);
                         }
-                        avgAngles[i-1] = Vector3.Angle(unitCam.avgVel, velCalc.avgVel);
+                        avgAngles[i - 1] = Vector3.Angle(unitCam.avgVel, velCalc.avgVel);
                     }
                 }
             }
         }
+    }
+    public void realVelocityAngles()
+    {
+        skeletonCreators = GameObject.FindGameObjectsWithTag("SkeletonCreator");
+        if (skeletonCreators.Length >= 2)
+        {
+            List<List<int>> commonJoints = new List<List<int>>();
+            Vector3[][] vectors = new Vector3[skeletonCreators.Length][];
+            foreach (var i in skeletonCreators)
+            {
+                commonJoints.Add(i.GetComponent<skeletonCreator>().trackedJoints);
+            }
+            commonJoints = findCommonJoints(commonJoints);
+            if (lengthsAreAbove(3, commonJoints))
+            {
+                for (int i = 0; i < vectors.GetLength(0); i++)
+                {
+                    GameObject[] skel = skeletonCreators[i].GetComponent<skeletonCreator>().players;
+                    vectors[i] = new Vector3[2] { skel[commonJoints[i][1]].transform.position - skel[commonJoints[i][0]].transform.position, skel[commonJoints[i][2]].transform.position - skel[commonJoints[i][0]].transform.position };
+                }
+                VectorAngles(vectors);
+            }
+        }
+    }
+    bool lengthsAreAbove(int num, List<List<int>> lengths)
+    {
+        for (int i = 0; i < lengths.Count; i++)
+        {
+            if (lengths[i].Count < num)
+            {
+                return false;
+            }
+        }
+        return true;
+    }
+    public List<List<int>> findCommonJoints(List<List<int>> joints)
+    {
+        List<List<int>> output = new List<List<int>>();
+        for(int i = 1; i < joints.Count; i++)
+        {
+            List<int> tempJoints = new List<int>();
+            for (int j = 0; j < joints[i].Count; j++)
+            {
+                    if (joints[0].Contains(joints[i][j]))
+                    {
+                        tempJoints.Add(joints[i][j]);
+                        
+                    }
+                if(tempJoints.Count == 3)
+                {
+                    break;
+                }
+            }
+            output.Add(tempJoints);
+        }
+        return output;
+    }
+    public float[][] Times3x3(float[][] m1, float[][] m2)
+    {
+        float[][] result = new float[3][];
+        result[0] = new float[3];
+        result[1] = new float[3];
+        result[2] = new float[3];
+        for (int i = 0; i < result.GetLength(0); i++)
+        {
+            for (int j = 0; j < result[i].Length; j++)
+            {
+                result[i][j] = m1[0][j] * m2[i][0] + m1[1][j] * m2[i][1] + m1[2][j] * m2[i][2];
+
+            }
+        }
+        // Debug.Log("result 0 0 = " + result[1][1]);
+        return result;
+    }
+    public float[][] invert3x3(float[][] m)
+    {
+
+        float[][] A = m; //The matrix that is entered from the data.
+        //Debug.Log("A " + 0 + " " + 0 + " = " + A[0][0]);
+        float[][] B = new float[3][]; //The transpose matrix of A
+        float[][] C = new float[3][]; //The adjoint matrix of A adj(A)
+        float[][] X = new float[3][];
+        B[0] = new float[3]; B[1] = new float[3]; B[2] = new float[3];
+        C[0] = new float[3]; C[1] = new float[3]; C[2] = new float[3];
+        X[0] = new float[3]; X[1] = new float[3]; X[2] = new float[3];
+        //The inverse of A (adj(A)/det)
+        float det; //The determinant of A
+        // Calculate the determinant of A (det)
+        float a = A[0][0] * (A[1][1] * A[2][2] - A[2][1] * A[1][2]);
+        //Debug.Log("a = " + a);
+        //Debug.Log((A[1][1] * A[2][2] - A[2][1] * A[1][2]));
+        float b = A[0][1] * (A[1][0] * A[2][2] - A[2][0] * A[1][2]);
+        //Debug.Log("b = " + b);
+        float c = A[0][2] * (A[1][0] * A[2][1] - A[2][0] * A[1][1]);
+        //Debug.Log("c = " + c);
+        det = a - b + c;
+        //Debug.Log("det = " + det);
+        // Find the transpose matrix (B)/> of A
+        for (int i = 0; i < 3; i++)
+        {
+            for (int j = 0; j < 3; j++)
+            {
+
+                B[i][j] = A[j][i];
+            }
+        }
+
+        //Calculate the adjoint matrix (C) of A
+        C[0][0] = B[1][1] * B[2][2] - B[2][1] * B[1][2];
+        C[0][1] = -(B[1][0] * B[2][2] - B[2][0] * B[1][2]);
+        C[0][2] = B[1][0] * B[2][1] - B[2][0] * B[1][1];
+        C[1][0] = -(B[0][1] * B[2][2] - B[2][1] * B[0][2]);
+        C[1][1] = B[0][0] * B[2][2] - B[2][0] * B[0][2];
+        C[1][2] = -(B[0][0] * B[2][1] - B[2][0] * B[0][1]);
+        C[2][0] = B[0][1] * B[1][2] - B[1][1] * B[0][2];
+        C[2][1] = -(B[0][0] * B[1][2] - B[1][0] * B[0][2]);
+        C[2][2] = B[0][0] * B[1][1] - B[1][0] * B[0][1];
+        // Calculate the inverse matrix of A (adj(A)/det)
+        for (int i = 0; i < 3; i++)
+        {
+            for (int j = 0; j < 3; j++)
+            {
+
+                X[i][j] = C[i][j] / det;
+
+            }
+        }
+        return X;
+    }
+    public Vector3[] VectorAngles(Vector3[][] sortedVectors)
+    {
+        Vector3[] angles = new Vector3[sortedVectors.GetLength(0) - 1];
+        if (sortedVectors.GetLength(0) >= 2)
+        {
+            if (allAreFilled(sortedVectors))
+            {
+                Vector3[] tempAngles = new Vector3[sortedVectors.GetLength(0) - 1];
+                Vector3 v3 = Vector3.Cross(sortedVectors[0][0], sortedVectors[0][1]);
+                float[][] m1 = convertTo3x3(sortedVectors[0][0], sortedVectors[0][1], v3);
+                for (int i = 1; i < sortedVectors.GetLength(0); i++)
+                {
+                    Vector3 w3 = Vector3.Cross(sortedVectors[i][0], sortedVectors[i][1]);
+                    float[][] m2 = convertTo3x3(sortedVectors[i][0], sortedVectors[i][1], w3);
+                    float[][] m3 = Times3x3(m2, invert3x3(m1));
+                    tempAngles[i - 1] = new Vector3(Mathf.Atan2(m3[2][1], m3[2][2]) * Mathf.Rad2Deg, Mathf.Atan2(-m3[2][0], Mathf.Sqrt(Mathf.Pow(m3[2][1], 2) + Mathf.Pow(m3[2][2], 2))) * Mathf.Rad2Deg, Mathf.Atan2(m3[1][0], m3[0][0]) * Mathf.Rad2Deg);
+                }
+                amount++;
+                for (int i = 0; i < angles.Length; i++)
+                {
+                    angles[i] = moreVectorAngles(new Vector3[][] { sortedVectors[0], sortedVectors[i + 1] }, tempAngles[i].y, 0);
+                    angleSum[i] += angles[i];
+                    avgNewAngles[i] = angleSum[i] / amount;
+                }
+            }
+        }
+        return angles;
+    }
+
+    public Vector3 moreVectorAngles(Vector3[][] sortedVectors, float yAngle, int number)
+    {
+
+        Debug.Log(number);
+
+        Vector3 v3 = Vector3.Cross(sortedVectors[0][0], sortedVectors[0][1]);
+        Vector3[] tempArray = timesArray(sortedVectors[1], Quaternion.Euler(Vector3.up * yAngle));
+        Vector3 w3 = Vector3.Cross(tempArray[0], tempArray[1]);
+        float[][] m1 = convertTo3x3(sortedVectors[0][0], sortedVectors[0][1], v3);
+        float[][] m2 = convertTo3x3(tempArray[0], tempArray[1], w3);
+        float[][] m3 = Times3x3(m2, invert3x3(m1));
+        Vector3 angle = new Vector3(Mathf.Atan2(m3[2][1], m3[2][2]) * Mathf.Rad2Deg, Mathf.Atan2(-m3[2][0], Mathf.Sqrt(Mathf.Pow(m3[2][1], 2) + Mathf.Pow(m3[2][2], 2))) * Mathf.Rad2Deg, Mathf.Atan2(m3[1][0], m3[0][0]) * Mathf.Rad2Deg);
+        //float yAngle2 = yAngle + angle.y;
+        yAngle += angle.y;
+        //Debug.Log(yAngle2);
+        //Debug.Log(angle.y);
+        if ((angle.y >= -0.00001f && angle.y <= 0.00001f) || number >= 100)
+        {
+
+            return new Vector3(angle.x, yAngle, angle.z);
+        }
+
+        return moreVectorAngles(sortedVectors, yAngle, number + 1);
+
+    }
+    Vector3[] timesArray(Vector3[] vectors, Quaternion angle)
+    {
+        Vector3[] output = new Vector3[vectors.Length];
+        for (int i = 0; i < vectors.Length; i++)
+        {
+            output[i] = angle * vectors[i];
+        }
+        return output;
+    }
+    bool allAreFilled(Vector3[][] array)
+    {
+        for (int i = 0; i < array.GetLength(0); i++)
+        {
+            if (array[i].Length < 2)
+            {
+                return false;
+            }
+        }
+        return true;
+    }
+    public float[][] convertTo3x3(Vector3 v1, Vector3 v2, Vector3 v3)
+    {
+        Vector3[] vectors = new Vector3[] { v1, v2, v3 };
+        float[][] result = new float[3][];
+        for (int i = 0; i < result.GetLength(0); i++)
+        {
+            result[i] = new float[3];
+            result[i][0] = vectors[i].x;
+            result[i][1] = vectors[i].y;
+            result[i][2] = vectors[i].z;
+        }
+        return result;
+
     }
 }
