@@ -57,18 +57,9 @@
     <Reference Include="UnityEngine.Networking">
       <HintPath>Library\UnityAssemblies\UnityEngine.Networking.dll</HintPath>
     </Reference>
-    <Reference Include="UnityEngine.Networking">
-      <HintPath>Library\UnityAssemblies\UnityEngine.Networking.dll</HintPath>
-    </Reference>
-<<<<<<< HEAD
-=======
-    <Reference Include="UnityEngine.UI">
-      <HintPath>Library\UnityAssemblies\UnityEngine.UI.dll</HintPath>
-    </Reference>
     <Reference Include="UnityEditor">
       <HintPath>Library\UnityAssemblies\UnityEditor.dll</HintPath>
     </Reference>
->>>>>>> refs/remotes/origin/master
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Assets\DepthColliderDemo\Scripts\DepthImageViewer.cs" />
@@ -103,11 +94,8 @@
     <Compile Include="Assets\Scripts\UserSyncPosition.cs" />
     <Compile Include="Assets\Scripts\UserTracking.cs" />
     <Compile Include="Assets\Scripts\VelocityCalculator.cs" />
-<<<<<<< HEAD
     <Compile Include="Assets\TestManager.cs" />
     <Compile Include="Assets\skeletonCreator.cs" />
-=======
->>>>>>> refs/remotes/origin/master
   </ItemGroup>
   <ItemGroup>
     <None Include="Assets\TestingLogs\LogTracking - Copy.txt" />

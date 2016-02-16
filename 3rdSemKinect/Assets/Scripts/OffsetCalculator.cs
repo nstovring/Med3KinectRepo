@@ -252,6 +252,11 @@ public class OffsetCalculator : NetworkBehaviour {
             }
 
         }
+        calcMove = true;
+    }
+    public void runSelectedVectorAngles()
+    {
+        selectedVectorAngles(new int[3] { 0, 4, 8});
     }
     bool jointsAreTracked(int[] jointNum, List<List<int>> joints)
     {
