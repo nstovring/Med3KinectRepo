@@ -58,6 +58,7 @@ public class OffsetCalculator : NetworkBehaviour {
         if (calcMove)
         {
             realVelocityAngles();
+            //selectedVectorAngles(new int[3] { 0, 4, 8 });
         }
     }
     //This method is used if the offsets have already been calculated and been saved in the file PlayerPrefs which is inheriant to Unity
@@ -208,7 +209,7 @@ public class OffsetCalculator : NetworkBehaviour {
         if (skeletonCreators.Length >= 2)
         {
             List<List<int>> commonJoints = new List<List<int>>();
-            Vector3[][] vectors = new Vector3[skeletonCreators.Length][];
+            Vector3[][] vectors = new Vector3[(skeletonCreators.Length-1)*2][];
             foreach (var i in skeletonCreators)
             {
                 commonJoints.Add(i.GetComponent<skeletonCreator>().trackedJoints);
@@ -221,9 +222,69 @@ public class OffsetCalculator : NetworkBehaviour {
                     GameObject[] skel = skeletonCreators[i].GetComponent<skeletonCreator>().players;
                     vectors[i] = new Vector3[2] { skel[commonJoints[i][1]].transform.position - skel[commonJoints[i][0]].transform.position, skel[commonJoints[i][2]].transform.position - skel[commonJoints[i][0]].transform.position };
                 }
-                VectorAngles(vectors);
+                differentVectorAngles(vectors,2);
             }
         }
+    }
+    public void selectedVectorAngles(int[] jointsWeWant)
+    {
+        skeletonCreators = GameObject.FindGameObjectsWithTag("SkeletonCreator");
+        if (skeletonCreators.Length >= 2)
+        {
+            List<List<int>> commonJoints = new List<List<int>>();
+            if(jointsAreTracked(jointsWeWant, commonJoints))
+            {
+                Vector3[][] vectors = new Vector3[(skeletonCreators.Length - 1) * 2][];
+                foreach (var i in skeletonCreators)
+                {
+                    commonJoints.Add(i.GetComponent<skeletonCreator>().trackedJoints);
+                }
+                commonJoints = findCommonJoints(commonJoints);
+                if (lengthsAreAbove(3, commonJoints))
+                {
+                    for (int i = 0; i < vectors.GetLength(0); i++)
+                    {
+                        GameObject[] skel = skeletonCreators[i].GetComponent<skeletonCreator>().players;
+                        vectors[i] = new Vector3[2] { skel[jointsWeWant[1]].transform.position - skel[jointsWeWant[0]].transform.position, skel[jointsWeWant[2]].transform.position - skel[jointsWeWant[0]].transform.position };
+                    }
+                    differentVectorAngles(vectors, 2);
+                }
+            }
+
+        }
+    }
+    bool jointsAreTracked(int[] jointNum, List<List<int>> joints)
+    {
+        foreach(int i in jointNum)
+        {
+            if (!jointsAreTracked(i, joints))
+            {
+                return false;
+            }
+        }
+        return true;
+    }
+    bool jointsAreTracked(int jointNum, List<List<int>> joints)
+    {
+        for(int i = 0; i < joints.Count; i++)
+        {
+            if (!jointsAreTracked(jointNum, joints[i]))
+            {
+                return false;
+            }
+        }
+        return true;
+    }
+    bool jointsAreTracked(int jointNum, List<int> joints)
+    {
+        foreach(int i in joints)
+        {
+            if (i == jointNum)
+            {
+                return true;
+            }
+        }
+        return false;
     }
     bool lengthsAreAbove(int num, List<List<int>> lengths)
     {
@@ -330,7 +391,35 @@ public class OffsetCalculator : NetworkBehaviour {
         }
         return X;
     }
-    public Vector3[] VectorAngles(Vector3[][] sortedVectors)
+    public Vector3[] differentVectorAngles(Vector3[][] sortedVectors, int num)
+    {
+        Vector3[] angles = new Vector3[sortedVectors.GetLength(0)/2];
+        if (sortedVectors.GetLength(0) >= 2)
+        {
+            if (allAreFilled(sortedVectors))
+            {
+                Vector3[] tempAngles = new Vector3[sortedVectors.GetLength(0) - 1];
+                Vector3 v3 = Vector3.Cross(sortedVectors[0][0], sortedVectors[0][1]);
+                float[][] m1 = convertTo3x3(sortedVectors[0][0], sortedVectors[0][1], v3);
+                for (int i = 1; i < sortedVectors.GetLength(0); i++)
+                {
+                    Vector3 w3 = Vector3.Cross(sortedVectors[i][0], sortedVectors[i][1]);
+                    float[][] m2 = convertTo3x3(sortedVectors[i][0], sortedVectors[i][1], w3);
+                    float[][] m3 = Times3x3(m2, invert3x3(m1));
+                    tempAngles[i - 1] = new Vector3(Mathf.Atan2(m3[2][1], m3[2][2]) * Mathf.Rad2Deg, Mathf.Atan2(-m3[2][0], Mathf.Sqrt(Mathf.Pow(m3[2][1], 2) + Mathf.Pow(m3[2][2], 2))) * Mathf.Rad2Deg, Mathf.Atan2(m3[1][0], m3[0][0]) * Mathf.Rad2Deg);
+                }
+                amount++;
+                for (int i = 0; i < angles.Length; i+= num)
+                {
+                    angles[i] = moreVectorAngles(new Vector3[][] { sortedVectors[i], sortedVectors[i + 1] }, tempAngles[i].y, 0);
+                    angleSum[i] += angles[i];
+                    avgNewAngles[i] = angleSum[i] / amount;
+                }
+            }
+        }
+        return angles;
+    }
+    public Vector3[] sameVectorAngles(Vector3[][] sortedVectors)
     {
         Vector3[] angles = new Vector3[sortedVectors.GetLength(0) - 1];
         if (sortedVectors.GetLength(0) >= 2)
