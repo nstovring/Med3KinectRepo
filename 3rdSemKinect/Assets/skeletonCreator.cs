@@ -2,6 +2,7 @@
 using System.Collections;
 using UnityEngine.Networking;
 using System.Collections.Generic;
+using UnityEngine.UI;
 
 public class skeletonCreator : NetworkBehaviour {
 
@@ -11,14 +12,26 @@ public class skeletonCreator : NetworkBehaviour {
     public List<int> trackedJoints;
     uint playerID;
     KinectManager manager;
+    public Button button;
     // Use this for initialization
     void Start () {
         players = new GameObject[20];
+        
+    }
+    public override void OnStartClient()
+    {
+        base.OnStartClient();
+        button = GameObject.Find("Apply Offset").GetComponent<Button>();
+        button.onClick.AddListener(spawnObjects);
+        
+
+    }
+    public void spawnObjects()
+    {
         if (hasAuthority)
         {
             Cmd_SpawnObjects();
         }
-        
     }
     void FixedUpdate()
     {
@@ -31,7 +44,7 @@ public class skeletonCreator : NetworkBehaviour {
     }
     void getTrackedJoints()
     {
-        for (int i = 0; i < 20; i++)
+        for (int i = 0; i < 2; i++)
         {
             if (manager == null)
             {
