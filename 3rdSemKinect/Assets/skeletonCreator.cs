@@ -14,14 +14,20 @@ public class skeletonCreator : NetworkBehaviour {
     // Use this for initialization
     void Start () {
         players = new GameObject[20];
-        Cmd_SpawnObjects();
+        if (hasAuthority)
+        {
+            Cmd_SpawnObjects();
+        }
+        
     }
     void FixedUpdate()
     {
-        playerID = manager != null ? manager.GetPlayer1ID() : 0;
-        trackedJoints = new List<int>();
-        getTrackedJoints();
-        Cmd_sendTrackedJoints(trackedJoints);
+        if (hasAuthority ) {
+            playerID = manager != null ? manager.GetPlayer1ID() : 0;
+            trackedJoints = new List<int>();
+            getTrackedJoints();
+            Cmd_sendTrackedJoints(trackedJoints);
+        }
     }
     void getTrackedJoints()
     {
