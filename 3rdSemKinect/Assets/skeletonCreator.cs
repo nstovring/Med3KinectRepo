@@ -13,6 +13,7 @@ public class skeletonCreator : NetworkBehaviour {
     uint playerID;
     KinectManager manager;
     public Button button;
+    public Button button2;
     float time;
     float sendRate;
     // Use this for initialization
@@ -26,9 +27,18 @@ public class skeletonCreator : NetworkBehaviour {
     {
         base.OnStartClient();
         button = GameObject.FindGameObjectWithTag("spawn button").GetComponent<Button>();
+        button2 = GameObject.FindGameObjectWithTag("send").GetComponent<Button>();
         button.onClick.AddListener(spawnObjects);
+        button2.onClick.AddListener(sendJoints);
         
 
+    }
+    public void sendJoints()
+    {
+        if (hasAuthority)
+        {
+            Cmd_sendTrackedJoints(trackedJoints);
+        }
     }
     public void spawnObjects()
     {
@@ -45,7 +55,7 @@ public class skeletonCreator : NetworkBehaviour {
             getTrackedJoints();
             if(time >= sendRate)
             {
-                Cmd_sendTrackedJoints(trackedJoints);
+                //Cmd_sendTrackedJoints(trackedJoints);
                 time = 0;
             }
             time += Time.deltaTime;
