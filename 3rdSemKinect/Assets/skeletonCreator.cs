@@ -13,9 +13,13 @@ public class skeletonCreator : NetworkBehaviour {
     uint playerID;
     KinectManager manager;
     public Button button;
+    float time;
+    float sendRate;
     // Use this for initialization
     void Start () {
         players = new GameObject[20];
+        sendRate = 1;
+        time = 0;
 
     }
     public override void OnStartClient()
@@ -39,7 +43,12 @@ public class skeletonCreator : NetworkBehaviour {
             playerID = manager != null ? manager.GetPlayer1ID() : 0;
             trackedJoints = new List<int>();
             getTrackedJoints();
-            //Cmd_sendTrackedJoints(trackedJoints);
+            if(time >= sendRate)
+            {
+                Cmd_sendTrackedJoints(trackedJoints);
+                time = 0;
+            }
+            time += Time.deltaTime;
         }
     }
     void getTrackedJoints()
