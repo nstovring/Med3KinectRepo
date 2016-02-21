@@ -39,7 +39,7 @@ public class skeletonCreator : NetworkBehaviour {
             playerID = manager != null ? manager.GetPlayer1ID() : 0;
             trackedJoints = new List<int>();
             getTrackedJoints();
-            Cmd_sendTrackedJoints(trackedJoints);
+            //Cmd_sendTrackedJoints(trackedJoints);
         }
     }
     void getTrackedJoints()
