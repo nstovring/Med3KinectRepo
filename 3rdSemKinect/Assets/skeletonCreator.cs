@@ -16,12 +16,12 @@ public class skeletonCreator : NetworkBehaviour {
     // Use this for initialization
     void Start () {
         players = new GameObject[20];
-        
+
     }
     public override void OnStartClient()
     {
         base.OnStartClient();
-        button = GameObject.Find("Apply Offset").GetComponent<Button>();
+        button = GameObject.FindGameObjectWithTag("spawn button").GetComponent<Button>();
         button.onClick.AddListener(spawnObjects);
         
 
@@ -35,7 +35,7 @@ public class skeletonCreator : NetworkBehaviour {
     }
     void FixedUpdate()
     {
-        if (hasAuthority ) {
+        if (hasAuthority) {
             playerID = manager != null ? manager.GetPlayer1ID() : 0;
             trackedJoints = new List<int>();
             getTrackedJoints();

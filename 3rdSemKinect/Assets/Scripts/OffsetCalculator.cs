@@ -57,7 +57,7 @@ public class OffsetCalculator : NetworkBehaviour {
         //calls the velocity calibration method
         if (calcMove)
         {
-            realVelocityAngles();
+            //realVelocityAngles();
             //selectedVectorAngles(new int[3] { 0, 4, 8 });
         }
     }
