@@ -10,6 +10,7 @@ public class skeletonCreator : NetworkBehaviour {
     public GameObject prefab;
     readonly Vector3 initialPosVector3 = new Vector3(50, 50, 50);
     public List<int> trackedJoints;
+    public int[] tempJoints;
     string test;
     uint playerID;
     KinectManager manager;
@@ -38,7 +39,8 @@ public class skeletonCreator : NetworkBehaviour {
     {
         if (hasAuthority)
         {
-            Cmd_sendTrackedJoints2("hi");
+            tempJoints = toArray(trackedJoints);
+            Cmd_sendTrackedJoints(tempJoints);
         }
     }
     public void spawnObjects()
@@ -78,9 +80,9 @@ public class skeletonCreator : NetworkBehaviour {
             
     }
     [Command]
-    void Cmd_sendTrackedJoints(List<int> joints)
+    void Cmd_sendTrackedJoints(int[] joints)
     {
-        trackedJoints = joints;
+        trackedJoints = toList(joints);
     }
     [Command]
     void Cmd_sendTrackedJoints2(string joints)
@@ -142,5 +144,23 @@ public class skeletonCreator : NetworkBehaviour {
     Color RandomColor()
     {
         return new Color(Random.value, Random.value, Random.value);
+    }
+    int[] toArray(List<int> list)
+    {
+        int[] temp = new int[list.Count];
+        for(int i = 0; i < list.Count; i++)
+        {
+            temp[i] = list[1];
+        }
+        return temp;
+    }
+    List<int> toList(int[] list)
+    {
+        List<int> temp = new List<int>(list.Length);
+        for (int i = 0; i < list.Length; i++)
+        {
+            temp[i] = list[1];
+        }
+        return temp;
     }
 }
