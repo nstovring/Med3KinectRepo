@@ -38,7 +38,7 @@ public class skeletonCreator : NetworkBehaviour {
     {
         if (hasAuthority)
         {
-            Cmd_sendTrackedJoints("hi");
+            Cmd_sendTrackedJoints2("hi");
         }
     }
     public void spawnObjects()
@@ -83,7 +83,7 @@ public class skeletonCreator : NetworkBehaviour {
         trackedJoints = joints;
     }
     [Command]
-    void Cmd_sendTrackedJoints(string joints)
+    void Cmd_sendTrackedJoints2(string joints)
     {
         test = joints;
         Debug.Log(test);
