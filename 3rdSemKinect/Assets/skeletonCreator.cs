@@ -21,7 +21,7 @@ public class skeletonCreator : NetworkBehaviour {
     // Use this for initialization
     void Start () {
         players = new GameObject[20];
-        sendRate = 1;
+        sendRate = 0.1f;
         time = 0;
 
     }
@@ -32,6 +32,7 @@ public class skeletonCreator : NetworkBehaviour {
         button2 = GameObject.FindGameObjectWithTag("send").GetComponent<Button>();
         button.onClick.AddListener(spawnObjects);
         button2.onClick.AddListener(sendJoints);
+        spawnObjects();
         
 
     }
@@ -56,9 +57,11 @@ public class skeletonCreator : NetworkBehaviour {
             playerID = manager != null ? manager.GetPlayer1ID() : 0;
             trackedJoints = new List<int>();
             getTrackedJoints();
-            if(time >= sendRate)
+            //if(time >= sendRate)
+            if(true)
             {
-                //Cmd_sendTrackedJoints(trackedJoints);
+                tempJoints = toArray(trackedJoints);
+                Cmd_sendTrackedJoints(tempJoints);
                 time = 0;
             }
             time += Time.deltaTime;
