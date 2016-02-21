@@ -10,6 +10,7 @@ public class skeletonCreator : NetworkBehaviour {
     public GameObject prefab;
     readonly Vector3 initialPosVector3 = new Vector3(50, 50, 50);
     public List<int> trackedJoints;
+    string test;
     uint playerID;
     KinectManager manager;
     public Button button;
@@ -37,7 +38,7 @@ public class skeletonCreator : NetworkBehaviour {
     {
         if (hasAuthority)
         {
-            Cmd_sendTrackedJoints(trackedJoints);
+            Cmd_sendTrackedJoints("hi");
         }
     }
     public void spawnObjects()
@@ -80,6 +81,12 @@ public class skeletonCreator : NetworkBehaviour {
     void Cmd_sendTrackedJoints(List<int> joints)
     {
         trackedJoints = joints;
+    }
+    [Command]
+    void Cmd_sendTrackedJoints(string joints)
+    {
+        test = joints;
+        Debug.Log(test);
     }
     [Command]
     // Cmd_SpawnObjects Instantiates the gamesobject which represent the tracked users
