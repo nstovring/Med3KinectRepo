@@ -34,7 +34,7 @@ public class OffsetCalculator : NetworkBehaviour {
     public Vector3[] angleSum;
     public Vector3[] avgNewAngles;
     public int kinectAmount;
-    bool run_once = false;
+    bool run_once = true;
 
 
     void Start()
@@ -232,7 +232,6 @@ public class OffsetCalculator : NetworkBehaviour {
     }
     public void selectedVectorAngles(int[] jointsWeWant)
     {
-        Debug.Log("hi");
         skeletonCreators = GameObject.FindGameObjectsWithTag("SkeletonCreator");
         Vector3[] positionalOffsets;
         GameObject[][] allPlayers = new GameObject[skeletonCreators.Length][];
@@ -241,7 +240,7 @@ public class OffsetCalculator : NetworkBehaviour {
             List<List<int>> commonJoints = new List<List<int>>();
             if(jointsAreTracked(jointsWeWant, commonJoints))
             {
-                Vector3[][] vectors = new Vector3[skeletonCreators.Length - 1][];
+                Vector3[][] vectors = new Vector3[skeletonCreators.Length][];
                 foreach (var i in skeletonCreators)
                 {
                     commonJoints.Add(i.GetComponent<skeletonCreator>().trackedJoints);
@@ -259,7 +258,6 @@ public class OffsetCalculator : NetworkBehaviour {
                 }
                 if (amount > 200 && run_once)
                 {
-                    Debug.Log("run once");
                     rotationalOffset = avgNewAngles[0];
                     Quaternion rotations = Quaternion.Euler(avgNewAngles[0]);
                     positionalOffsets = getJointsPosOffset(allPlayers, jointsWeWant,rotations);
@@ -277,7 +275,6 @@ public class OffsetCalculator : NetworkBehaviour {
             }
 
         }
-        
         calcMove = true;
     }
     public Vector3[] getJointsPosOffset(GameObject[][] vectorArrays, int[] commonJoints, Quaternion angles)
