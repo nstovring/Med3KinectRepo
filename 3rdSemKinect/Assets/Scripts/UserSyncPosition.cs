@@ -63,16 +63,13 @@ public class UserSyncPosition : NetworkBehaviour
         //If this is a calibration user control its own movement
         if (isCalibrationUser)
         {
-            if (!isGivenJoint)
-            {
-                TransmitPosition();
-            }
-            else if (isGivenJoint && hasAuthority);
+            if (isGivenJoint && hasAuthority)
             {
                 TransmitPosition(jointNum);
 
             }
-            
+            else TransmitPosition();
+
         }
         //Call lerpPosition
         LerpPosition();

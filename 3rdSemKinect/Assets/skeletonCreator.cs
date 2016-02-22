@@ -51,6 +51,7 @@ public class skeletonCreator : NetworkBehaviour {
             Cmd_SpawnObjects();
         }
     }
+    [ClientCallback]
     void FixedUpdate()
     {
         if (hasAuthority) {
@@ -158,10 +159,10 @@ public class skeletonCreator : NetworkBehaviour {
     }
     List<int> toList(int[] list)
     {
-        List<int> temp = new List<int>(list.Length);
+        List<int> temp = new List<int>();
         for (int i = 0; i < list.Length; i++)
         {
-            temp[i] = list[1];
+            temp.Add(list[i]);
         }
         return temp;
     }

@@ -282,12 +282,9 @@ public class OffsetCalculator : NetworkBehaviour {
     }
     bool jointsAreTracked(int jointNum, List<int> joints)
     {
-        foreach(int i in joints)
+        if (joints.Contains(jointNum))
         {
-            if (i == jointNum)
-            {
-                return true;
-            }
+            return true;
         }
         return false;
     }
