@@ -23,7 +23,7 @@ public class skeletonCreator : NetworkBehaviour {
         players = new GameObject[20];
         sendRate = 0.1f;
         time = 0;
-        spawnObjects();
+        //spawnObjects();
 
     }
     public override void OnStartClient()
@@ -104,13 +104,13 @@ public class skeletonCreator : NetworkBehaviour {
             players[i] = Instantiate(prefab, initialPosVector3, Quaternion.identity) as GameObject;
             // Get the class UserSyncPosition is aquired from the prefab
             UserSyncPosition userSyncPosition = players[i].transform.GetComponent<UserSyncPosition>();
-            userSyncPosition.jointNum = i;
-            userSyncPosition.isGivenJoint = true;
             Color rndColor = RandomColor();
             //Call the initialize method on the userSyncPosition class on the current user
             userSyncPosition.Initialize((GetComponent<NetworkIdentity>().netId.Value - 1) + " " + i, rndColor);
             //Spawn the prefab on the server after initialization, enabliing us to call network methods from classes on it
             NetworkServer.SpawnWithClientAuthority(players[i], connectionToClient);
+            userSyncPosition.jointNum = i;
+            userSyncPosition.isGivenJoint = true;
             //Call the Cmd_changeIdentity method, which recieves The networkidentity netids' value as well as a number from the loop
             userSyncPosition.Cmd_ChangeIdentity(rndColor, ("SubUser " + (GetComponent<NetworkIdentity>().netId.Value - 1) + " " + i));
         }

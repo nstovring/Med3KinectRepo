@@ -45,8 +45,8 @@ public class UserSyncPosition : NetworkBehaviour
     //The name of this object
     public string userId;
 
-    public bool isGivenJoint = false;
-    public int jointNum = -1;
+    [SyncVar]public bool isGivenJoint = false;
+    [SyncVar]public int jointNum = -1;
     // Update is called once per frame
     void Update()
     {
@@ -67,7 +67,7 @@ public class UserSyncPosition : NetworkBehaviour
             {
                 TransmitPosition();
             }
-            else if (isGivenJoint)
+            else if (isGivenJoint && hasAuthority);
             {
                 TransmitPosition(jointNum);
 
