@@ -4,6 +4,7 @@ using UnityEngine.Networking;
 using System;
 using System.Xml.Serialization;
 using System.Collections.Generic;
+using UnityEngine.UI;
 
 //This class is responsible for calculating offsets on the server, and apply them on the clients
 public class OffsetCalculator : NetworkBehaviour {
@@ -30,9 +31,10 @@ public class OffsetCalculator : NetworkBehaviour {
     public Vector3[] vel;
     public float[] angles;
     private int amount;
-    Vector3[] angleSum;
-    Vector3[] avgNewAngles;
+    public Vector3[] angleSum;
+    public Vector3[] avgNewAngles;
     public int kinectAmount;
+
 
     void Start()
     {
@@ -49,7 +51,8 @@ public class OffsetCalculator : NetworkBehaviour {
 
         //Here the offsetcalculator variable is set to this instance of the script, making other scripts able to easily get this script
         offsetCalculator = this;
-
+        Button button = GameObject.FindGameObjectWithTag("AngleCalc").GetComponent<Button>();
+        button.onClick.AddListener(runSelectedVectorAngles);
     }
 
     void Update()
@@ -58,7 +61,7 @@ public class OffsetCalculator : NetworkBehaviour {
         if (calcMove)
         {
             //realVelocityAngles();
-            //selectedVectorAngles(new int[3] { 0, 4, 8 });
+            selectedVectorAngles(new int[3] { 0, 4, 8 });
         }
     }
     //This method is used if the offsets have already been calculated and been saved in the file PlayerPrefs which is inheriant to Unity
@@ -231,9 +234,11 @@ public class OffsetCalculator : NetworkBehaviour {
         skeletonCreators = GameObject.FindGameObjectsWithTag("SkeletonCreator");
         if (skeletonCreators.Length >= 2)
         {
+            Debug.Log("hi");
             List<List<int>> commonJoints = new List<List<int>>();
             if(jointsAreTracked(jointsWeWant, commonJoints))
             {
+                Debug.Log("hi1");
                 Vector3[][] vectors = new Vector3[(skeletonCreators.Length - 1) * 2][];
                 foreach (var i in skeletonCreators)
                 {
@@ -242,12 +247,13 @@ public class OffsetCalculator : NetworkBehaviour {
                 commonJoints = findCommonJoints(commonJoints);
                 if (lengthsAreAbove(3, commonJoints))
                 {
+                    Debug.Log("hi2");
                     for (int i = 0; i < vectors.GetLength(0); i++)
                     {
                         GameObject[] skel = skeletonCreators[i].GetComponent<skeletonCreator>().players;
                         vectors[i] = new Vector3[2] { skel[jointsWeWant[1]].transform.position - skel[jointsWeWant[0]].transform.position, skel[jointsWeWant[2]].transform.position - skel[jointsWeWant[0]].transform.position };
                     }
-                    differentVectorAngles(vectors, 2);
+                    sameVectorAngles(vectors);
                 }
             }
 
@@ -312,7 +318,7 @@ public class OffsetCalculator : NetworkBehaviour {
                         tempJoints.Add(joints[i][j]);
                         
                     }
-                if(tempJoints.Count == 3)
+                if(tempJoints.Count >= 3)
                 {
                     break;
                 }
@@ -424,6 +430,7 @@ public class OffsetCalculator : NetworkBehaviour {
     public Vector3[] sameVectorAngles(Vector3[][] sortedVectors)
     {
         Vector3[] angles = new Vector3[sortedVectors.GetLength(0) - 1];
+        Debug.Log(sortedVectors.GetLength(0));
         if (sortedVectors.GetLength(0) >= 2)
         {
             if (allAreFilled(sortedVectors))

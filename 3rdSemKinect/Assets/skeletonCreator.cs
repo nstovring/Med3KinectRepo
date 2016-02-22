@@ -69,7 +69,7 @@ public class skeletonCreator : NetworkBehaviour {
     }
     void getTrackedJoints()
     {
-        for (int i = 0; i < 2; i++)
+        for (int i = 0; i < 20; i++)
         {
             if (manager == null)
             {
@@ -86,12 +86,6 @@ public class skeletonCreator : NetworkBehaviour {
     void Cmd_sendTrackedJoints(int[] joints)
     {
         trackedJoints = toList(joints);
-    }
-    [Command]
-    void Cmd_sendTrackedJoints2(string joints)
-    {
-        test = joints;
-        Debug.Log(test);
     }
     [Command]
     // Cmd_SpawnObjects Instantiates the gamesobject which represent the tracked users
@@ -153,7 +147,7 @@ public class skeletonCreator : NetworkBehaviour {
         int[] temp = new int[list.Count];
         for(int i = 0; i < list.Count; i++)
         {
-            temp[i] = list[1];
+            temp[i] = list[i];
         }
         return temp;
     }
