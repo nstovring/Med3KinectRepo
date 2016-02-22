@@ -23,6 +23,7 @@ public class skeletonCreator : NetworkBehaviour {
         players = new GameObject[20];
         sendRate = 0.1f;
         time = 0;
+        spawnObjects();
 
     }
     public override void OnStartClient()
@@ -32,7 +33,6 @@ public class skeletonCreator : NetworkBehaviour {
         button2 = GameObject.FindGameObjectWithTag("send").GetComponent<Button>();
         button.onClick.AddListener(spawnObjects);
         button2.onClick.AddListener(sendJoints);
-        spawnObjects();
         
 
     }
@@ -60,8 +60,7 @@ public class skeletonCreator : NetworkBehaviour {
             //if(time >= sendRate)
             if(true)
             {
-                tempJoints = toArray(trackedJoints);
-                Cmd_sendTrackedJoints(tempJoints);
+                sendJoints();
                 time = 0;
             }
             time += Time.deltaTime;
