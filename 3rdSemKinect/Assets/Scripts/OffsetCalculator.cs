@@ -34,6 +34,7 @@ public class OffsetCalculator : NetworkBehaviour {
     public Vector3[] angleSum;
     public Vector3[] avgNewAngles;
     public int kinectAmount;
+    bool run_once = false;
 
 
     void Start()
@@ -231,15 +232,16 @@ public class OffsetCalculator : NetworkBehaviour {
     }
     public void selectedVectorAngles(int[] jointsWeWant)
     {
+        Debug.Log("hi");
         skeletonCreators = GameObject.FindGameObjectsWithTag("SkeletonCreator");
+        Vector3[] positionalOffsets;
+        GameObject[][] allPlayers = new GameObject[skeletonCreators.Length][];
         if (skeletonCreators.Length >= 2)
         {
-            Debug.Log("hi");
             List<List<int>> commonJoints = new List<List<int>>();
             if(jointsAreTracked(jointsWeWant, commonJoints))
             {
-                Debug.Log("hi1");
-                Vector3[][] vectors = new Vector3[(skeletonCreators.Length - 1) * 2][];
+                Vector3[][] vectors = new Vector3[skeletonCreators.Length - 1][];
                 foreach (var i in skeletonCreators)
                 {
                     commonJoints.Add(i.GetComponent<skeletonCreator>().trackedJoints);
@@ -247,18 +249,49 @@ public class OffsetCalculator : NetworkBehaviour {
                 commonJoints = findCommonJoints(commonJoints);
                 if (lengthsAreAbove(3, commonJoints))
                 {
-                    Debug.Log("hi2");
                     for (int i = 0; i < vectors.GetLength(0); i++)
                     {
                         GameObject[] skel = skeletonCreators[i].GetComponent<skeletonCreator>().players;
+                        allPlayers[i] = skel;
                         vectors[i] = new Vector3[2] { skel[jointsWeWant[1]].transform.position - skel[jointsWeWant[0]].transform.position, skel[jointsWeWant[2]].transform.position - skel[jointsWeWant[0]].transform.position };
                     }
                     sameVectorAngles(vectors);
                 }
+                if (amount > 200 && run_once)
+                {
+                    Debug.Log("run once");
+                    rotationalOffset = avgNewAngles[0];
+                    Quaternion rotations = Quaternion.Euler(avgNewAngles[0]);
+                    positionalOffsets = getJointsPosOffset(allPlayers, jointsWeWant,rotations);
+                    positionalOffset = positionalOffsets[0];
+                    for (int i = 1; i < allPlayers.GetLength(0); i++)
+                    {
+                        for (int j = 0; j < allPlayers[i].Length; j++)
+                        {
+                            allPlayers[i][j].transform.GetComponent<UserSyncPosition>().rotationalOffset = true;
+                            allPlayers[i][j].transform.GetComponent<UserSyncPosition>().positionalOffset = true;
+                        }
+                    }
+                    run_once = false;
+                }
             }
 
         }
+        
         calcMove = true;
+    }
+    public Vector3[] getJointsPosOffset(GameObject[][] vectorArrays, int[] commonJoints, Quaternion angles)
+    {
+        Vector3[] output = new Vector3[vectorArrays.GetLength(0) - 1];
+        for (int i = 1; i < vectorArrays.GetLength(0); i++)
+        {
+            for (int j = 0; j < commonJoints.Length; j++)
+            {
+                output[i - 1] += vectorArrays[0][j].transform.position - (angles*vectorArrays[i][j].transform.position);
+            }
+            output[i - 1] = output[i - 1] / commonJoints.Length;
+        }
+        return output;
     }
     public void runSelectedVectorAngles()
     {
@@ -307,6 +340,7 @@ public class OffsetCalculator : NetworkBehaviour {
     }
     public List<List<int>> findCommonJoints(List<List<int>> joints)
     {
+
         List<List<int>> output = new List<List<int>>();
         for(int i = 1; i < joints.Count; i++)
         {
@@ -430,7 +464,6 @@ public class OffsetCalculator : NetworkBehaviour {
     public Vector3[] sameVectorAngles(Vector3[][] sortedVectors)
     {
         Vector3[] angles = new Vector3[sortedVectors.GetLength(0) - 1];
-        Debug.Log(sortedVectors.GetLength(0));
         if (sortedVectors.GetLength(0) >= 2)
         {
             if (allAreFilled(sortedVectors))
