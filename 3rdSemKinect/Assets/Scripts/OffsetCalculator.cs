@@ -5,10 +5,11 @@ using System;
 using System.Xml.Serialization;
 using System.Collections.Generic;
 using UnityEngine.UI;
+using Microsoft.Kinect;
 
 //This class is responsible for calculating offsets on the server, and apply them on the clients
 public class OffsetCalculator : NetworkBehaviour {
-
+    public KinectAudioSource kinectAusioSource;
     //Varibles are defined
     private Vector3 player2Offset;
     private float player2angleOffset;
