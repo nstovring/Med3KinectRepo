@@ -35,6 +35,7 @@ public class OffsetCalculator : NetworkBehaviour {
     public Vector3[] avgNewAngles;
     public int kinectAmount;
     bool run_once = true;
+    bool continuedRun = false;
 
 
     void Start()
@@ -233,7 +234,6 @@ public class OffsetCalculator : NetworkBehaviour {
     public void selectedVectorAngles(int[] jointsWeWant)
     {
         skeletonCreators = GameObject.FindGameObjectsWithTag("SkeletonCreator");
-        Vector3[] positionalOffsets;
         GameObject[][] allPlayers = new GameObject[skeletonCreators.Length][];
         if (skeletonCreators.Length >= 2)
         {
@@ -256,37 +256,80 @@ public class OffsetCalculator : NetworkBehaviour {
                     }
                     sameVectorAngles(vectors);
                 }
-                if (amount > 200 && run_once)
+                if (amount >= 200 && run_once)
                 {
-                    rotationalOffset = avgNewAngles[0];
-                    Quaternion rotations = Quaternion.Euler(avgNewAngles[0]);
-                    positionalOffsets = getJointsPosOffset(allPlayers, jointsWeWant,rotations);
-                    positionalOffset = positionalOffsets[0];
-                    for (int i = 1; i < allPlayers.GetLength(0); i++)
-                    {
-                        for (int j = 0; j < allPlayers[i].Length; j++)
-                        {
-                            allPlayers[i][j].transform.GetComponent<UserSyncPosition>().rotationalOffset = true;
-                            allPlayers[i][j].transform.GetComponent<UserSyncPosition>().positionalOffset = true;
-                        }
-                    }
+                    getAndSetVectorOffsets(allPlayers, jointsWeWant, skeletonCreators);
+                    reset();
                     run_once = false;
+                    continuedRun = true;
+                }
+                if(amount >= 200 && continuedRun)
+                {
+                    adjustOffsets(allPlayers, jointsWeWant, skeletonCreators);
+                    reset();
+                    continuedRun = false;
                 }
             }
 
         }
         calcMove = true;
     }
-    public Vector3[] getJointsPosOffset(GameObject[][] vectorArrays, int[] commonJoints, Quaternion angles)
+    public void reset()
     {
+        angleSum = new Vector3[kinectAmount - 1];
+        avgNewAngles = new Vector3[kinectAmount - 1];
+        amount = 0;
+    }
+    public void getAndSetVectorOffsets(GameObject[][] vectorArrays, int[] commonJoints, GameObject[] skeletonCreators)
+    {
+        Vector3[] positionalOffsets;
+        rotationalOffset = avgNewAngles[0];
+        Quaternion rotations = Quaternion.Euler(avgNewAngles[0]);
+        positionalOffsets = getJointsPosOffset(vectorArrays, commonJoints, rotations, skeletonCreators);
+        //positionalOffsets = getJointsPosOffset(skeletonCreators, new Quaternion[] { rotations });
+        positionalOffset = positionalOffsets[0];
+
+        for (int i = 1; i < vectorArrays.GetLength(0); i++)
+        {
+            skeletonCreators[i].transform.GetComponent<UserSyncPosition>().rotationalOffset = true;
+            skeletonCreators[i].transform.GetComponent<UserSyncPosition>().positionalOffset = true;
+            for (int j = 0; j < vectorArrays[i].Length; j++)
+            {
+                vectorArrays[i][j].transform.GetComponent<UserSyncPosition>().rotationalOffset = true;
+                vectorArrays[i][j].transform.GetComponent<UserSyncPosition>().positionalOffset = true;
+            }
+        }
+    }
+    public void adjustOffsets(GameObject[][] vectorArrays, int[] commonJoints, GameObject[] skeletonCreators)
+    {
+        Vector3[] positionalOffsets;
+        //rotationalOffset += avgNewAngles[0];
+        Quaternion rotations = Quaternion.Euler(rotationalOffset);
+        //positionalOffsets = getJointsPosOffset(vectorArrays, commonJoints, rotations, skeletonCreators);
+        positionalOffsets = getJointsPosOffset(skeletonCreators, new Quaternion[] { rotations });
+        positionalOffset += positionalOffsets[0];
+    }
+    public Vector3[] getJointsPosOffset(GameObject[][] vectorArrays, int[] commonJoints, Quaternion angles, GameObject[] skeletonCreators)
+    {
+        int averageAdjust = 1;
         Vector3[] output = new Vector3[vectorArrays.GetLength(0) - 1];
         for (int i = 1; i < vectorArrays.GetLength(0); i++)
         {
+            output[i - 1] = (skeletonCreators[0].transform.position - (angles * skeletonCreators[i].transform.position)) * averageAdjust;
             for (int j = 0; j < commonJoints.Length; j++)
             {
                 output[i - 1] += vectorArrays[0][j].transform.position - (angles*vectorArrays[i][j].transform.position);
             }
-            output[i - 1] = output[i - 1] / commonJoints.Length;
+            output[i - 1] = output[i - 1] / (commonJoints.Length + averageAdjust);
+        }
+        return output;
+    }
+    public Vector3[] getJointsPosOffset(GameObject[] skeletonCreators, Quaternion[] angles)
+    {
+        Vector3[] output = new Vector3[skeletonCreators.Length - 1];
+        for (int i = 1; i < skeletonCreators.Length; i++)
+        {
+            output[i - 1] = (skeletonCreators[0].transform.position - skeletonCreators[i].transform.position);
         }
         return output;
     }
@@ -490,7 +533,7 @@ public class OffsetCalculator : NetworkBehaviour {
     public Vector3 moreVectorAngles(Vector3[][] sortedVectors, float yAngle, int number)
     {
 
-        Debug.Log(number);
+        //Debug.Log(number);
 
         Vector3 v3 = Vector3.Cross(sortedVectors[0][0], sortedVectors[0][1]);
         Vector3[] tempArray = timesArray(sortedVectors[1], Quaternion.Euler(Vector3.up * yAngle));
