@@ -26,13 +26,17 @@ public class Clock : NetworkBehaviour {
 	}
     void OnSerializeNetworkView(BitStream stream, NetworkMessageInfo info)
     {
+        float time = (float)this.time;
         if (stream.isWriting)
         {
+            stream.Serialize(ref time);
         }
         else
         {
-            time = Network.time - info.timestamp;
-            Debug.Log(time);
+
+            stream.Serialize(ref time);
+            this.time = Network.time - info.timestamp;
+            Debug.Log(this.time);
         }
     }
 }
