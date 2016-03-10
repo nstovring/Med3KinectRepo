@@ -3,7 +3,7 @@ using System.Collections;
 using UnityEngine.Networking;
 
 public class Clock : NetworkBehaviour {
-
+    double time;
 	// Use this for initialization
 	void Start () {
 	
@@ -24,4 +24,15 @@ public class Clock : NetworkBehaviour {
         }
         
 	}
+    void OnSerializeNetworkView(BitStream stream, NetworkMessageInfo info)
+    {
+        if (stream.isWriting)
+        {
+        }
+        else
+        {
+            time = Network.time - info.timestamp;
+            Debug.Log(time);
+        }
+    }
 }
