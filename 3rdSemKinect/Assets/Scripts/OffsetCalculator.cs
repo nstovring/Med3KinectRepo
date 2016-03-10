@@ -5,11 +5,9 @@ using System;
 using System.Xml.Serialization;
 using System.Collections.Generic;
 using UnityEngine.UI;
-using Microsoft.Kinect;
 
 //This class is responsible for calculating offsets on the server, and apply them on the clients
 public class OffsetCalculator : NetworkBehaviour {
-    public KinectAudioSource kinectAusioSource;
     //Varibles are defined
     private Vector3 player2Offset;
     private float player2angleOffset;
@@ -590,8 +588,57 @@ public class OffsetCalculator : NetworkBehaviour {
         return result;
 
     }
-    public void audiohanlder()
+    public Vector3 getIntersectionPoint(Vector3 d1, Vector3 d2, Vector3 c)
     {
-        
+        float t = 0;
+        Vector3 intersectionPoint = Vector3.zero;
+        if ((d1.z * d2.x - d1.x * d2.z) != 0)
+        {
+            t = (c.x * d2.z - c.z * d2.x) / (d1.z * d2.x - d1.x * d2.z);
+            intersectionPoint = d1 * t;
+            intersectionPoint = new Vector3(intersectionPoint.x, 0, intersectionPoint.z);
+        }
+        return intersectionPoint;
+    }
+    public void vectorIntersectionPoint(float angle1, float angle2)
+    {
+        //replace the parameters with the sound angles from kinects
+        if(rotationalOffset.z < 10)
+        {
+            Quaternion a1 = Quaternion.Euler(0, angle1, 0);
+            Quaternion a2 = Quaternion.Euler(0, angle2 + rotationalOffset.y, 0);
+            Vector3 d1 = a1 * Vector3.forward;
+            Vector3 d2 = a2 * Vector3.forward;
+            Vector3 intersectionPoint = getIntersectionPoint(d1, d2, new Vector3(positionalOffset.x, 0, positionalOffset.z));
+        }
+    }
+    public Vector3 findHeight(float depth, float angle)
+    {
+        Vector3 height = Vector3.zero;
+        //angle should be the angle difference
+        if(rotationalOffset.z > 5)
+        {
+            float length = depth / (float)Math.Sin(40);
+            Vector3 heightMax = Quaternion.Euler(0, 0, rotationalOffset.z) * new Vector3(length, 0, 0);
+            height = angle / 50 * heightMax;
+        }
+        return height;
+    }
+    public float soundAngleFromTimeDelay(double deltaT, float length)
+    {
+        float angle = 0;
+        float circumference = (length * 340) * 2;
+        float dia = circumference / (float)Math.PI;
+        float r = dia / 2;
+        float pheta = (float)deltaT / r;
+        Vector2 Point = new Vector2((float)Math.Cos(pheta) * r, (float)Math.Sin(pheta) * r);
+        float a = Point.y;
+        float b1 = dia - (dia - Point.x);
+        float b2 = dia - Point.x;
+        float c1 = Mathf.Sqrt(Mathf.Pow(b1, 2) + Mathf.Pow(a, 2));
+        float c2 = Mathf.Sqrt(Mathf.Pow(b2, 2) + Mathf.Pow(a, 2));
+        float A1 = Mathf.Atan2(b1, a);
+        angle = 90 - A1;
+        return angle;
     }
 }
