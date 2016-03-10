@@ -14,9 +14,12 @@ public class Clock : NetworkBehaviour {
         Debug.Log("Network time is " + Network.time);
         if (isServer)
         {
-            for (int i = 0; i < Network.connections.Length; i++)
+            int i = 0;
+            Debug.Log("Hellu");
+            while (i < Network.connections.Length)
             {
                 Debug.Log("Player "+ i + " has " + Network.GetLastPing(Network.connections[i]) + " ms ping");
+                i++;
             }
         }
         
